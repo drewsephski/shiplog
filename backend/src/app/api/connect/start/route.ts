@@ -1,8 +1,8 @@
 import { db } from '@/lib/db';
 import { hash, dayRequest } from '@/lib/domain';
-import { connectionInput } from '@/lib/connect';
+import { connectionInput, connectionStartURL } from '@/lib/connect';
 import { rateLimit } from '@/lib/auth';
-import { publicURL, randomToken, required } from '@/lib/security';
+import { randomToken, required } from '@/lib/security';
 import { jsonBody, route } from '@/lib/http';
 export const runtime = 'nodejs';
 export function POST(request: Request) { return route(async()=>{
@@ -13,5 +13,5 @@ export function POST(request: Request) { return route(async()=>{
   await rateLimit(`connect:${hash(request.headers.get('x-forwarded-for') ?? 'unknown')}`,20,3600);
   const state = randomToken(); const sql = db();
   await sql`INSERT INTO connect_attempts(state_hash,challenge,time_zone) VALUES(${hash(state)},${input.challenge},${input.timeZone})`;
-  return Response.json({url:`${publicURL()}/connect/begin?state=${state}`});
+  return Response.json({url:connectionStartURL(request,state)});
 }); }

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { z } from 'zod';
 import { synthesisSchema, OpenRouterJournalSynthesisService } from '../lib/synthesis';
-import { browserRoute, connectionCSRF, html } from '../lib/connect';
+import { browserRoute, connectionCSRF, connectionStartURL, html } from '../lib/connect';
 import { PublicError } from '../lib/security';
 import { dayInterval, evidenceID, generationHash, validateSynthesis, reconciliationDays, type ActivityEvidence, type SynthesisInput } from '../lib/domain';
 import { matchEntries } from '../lib/journal';
@@ -84,6 +84,17 @@ describe('synthesis provenance',()=>{
   });
 });
 describe('connection browser',()=>{
+  it('preserves Build 2’s pinned first-hop origin without trusting arbitrary hosts',()=>{
+    vi.stubEnv('SHIPLOG_PUBLIC_URL','https://shiplog.fun');
+    try {
+      for (const origin of ['https://shiplog.fun','https://shiplog-agent.vercel.app']) {
+        expect(new URL(connectionStartURL(new Request(origin+'/api/connect/start'),'state')).origin).toBe(origin);
+      }
+      for (const origin of ['https://attacker.example','http://shiplog-agent.vercel.app','https://shiplog-agent.vercel.app.attacker.example']) {
+        expect(new URL(connectionStartURL(new Request(origin+'/api/connect/start'),'state')).origin).toBe('https://shiplog.fun');
+      }
+    } finally { vi.unstubAllEnvs(); }
+  });
   it('allows the native callback scheme after consent',()=>{
     const policy=html('Connect','').headers.get('Content-Security-Policy');
     expect(policy).toContain("form-action 'self' shiplog:");

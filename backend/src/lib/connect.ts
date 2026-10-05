@@ -7,6 +7,14 @@ import { hash } from './domain';
 import { decrypt, PublicError, publicURL, required } from './security';
 import { accessibleRepositories } from './github';
 
+// Build 2 pins its initial sign-in URL to this existing production alias.
+// Retain that exact origin for the first hop; the browser then establishes its
+// secure flow cookie on the canonical origin. Never trust arbitrary Host values.
+export function connectionStartURL(request: Request, state: string) {
+  const origin = new URL(request.url).origin;
+  const initialOrigin = origin === 'https://shiplog-agent.vercel.app' ? origin : publicURL();
+  return `${initialOrigin}/connect/begin?state=${encodeURIComponent(state)}`;
+}
 export const FLOW_COOKIE = '__Host-shiplog-connect';
 export async function flow() {
   const state = (await cookies()).get(FLOW_COOKIE)?.value;
