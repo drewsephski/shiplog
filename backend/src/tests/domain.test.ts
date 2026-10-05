@@ -1,5 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { z } from 'zod';
+import { synthesisSchema, OpenRouterJournalSynthesisService } from '../lib/synthesis';
+import { browserRoute, connectionCSRF, html } from '../lib/connect';
+import { PublicError } from '../lib/security';
 import { dayInterval, evidenceID, generationHash, validateSynthesis, reconciliationDays, type ActivityEvidence, type SynthesisInput } from '../lib/domain';
 import { matchEntries } from '../lib/journal';
 import { createHmac } from 'node:crypto';
@@ -31,6 +34,26 @@ describe('civil days and identity',()=>{
   });
 });
 describe('synthesis provenance',()=>{
+  it('constrains provider citations to canonical evidence identities',()=>{
+    const schema=synthesisSchema(input);
+    expect(schema.parse(output)).toEqual(output);
+    expect(()=>schema.parse({...output,entries:[{...output.entries[0],evidenceIDs:[evidence.externalID]}]})).toThrow();
+    expect(()=>schema.parse({...output,narrative:{...output.narrative,evidenceIDs:[evidence.externalID]}})).toThrow();
+    expect(()=>schema.parse({...output,entries:[{...output.entries[0],repositoryID:'other'}]})).toThrow();
+  });
+  it('excludes protected evidence from generated entries but permits narrative citations',()=>{
+    const protectedInput={...input,existing:[{id:'saved',title:'My words',detail:'',evidenceIDs:[evidence.id],userEdited:true}]};
+    const schema=synthesisSchema(protectedInput);
+    expect(()=>schema.parse(output)).toThrow();
+    expect(schema.parse({...output,entries:[]})).toEqual({...output,entries:[]});
+  });
+  it('returns an empty quiet day without sending a provider request',async()=>{
+    const fetch=vi.spyOn(globalThis,'fetch');
+    try {
+      expect(await new OpenRouterJournalSynthesisService().synthesize({...input,evidence:[]})).toEqual({entries:[],narrative:{text:'',evidenceIDs:[]}});
+      expect(fetch).not.toHaveBeenCalled();
+    } finally { fetch.mockRestore(); }
+  });
   it('accepts grouped supported work',()=>expect(validateSynthesis(output,input)).toEqual(output));
   it('rejects unknown evidence before publishing',()=>expect(()=>validateSynthesis({...output,entries:[{...output.entries[0],evidenceIDs:['invented']}]},input)).toThrow());
   it('rejects repository mixing, duplicate citations and unsupported narrative',()=>{
@@ -58,6 +81,29 @@ describe('synthesis provenance',()=>{
     const generated = validateSynthesis(output,input).entries;
     expect(matchEntries(generated,[existing])[0].id).toBe(existing.id);
     expect(matchEntries(generated,[{...existing,userEdited:true}])[0].id).not.toBe(existing.id);
+  });
+});
+describe('connection browser',()=>{
+  it('allows the native callback scheme after consent',()=>{
+    const policy=html('Connect','').headers.get('Content-Security-Policy');
+    expect(policy).toContain("form-action 'self' shiplog:");
+    expect(policy).toContain("default-src 'none'");
+  });
+  it('keeps CSRF stable across reloads and bound to the connection flow',()=>{
+    vi.stubEnv('TOKEN_ENCRYPTION_KEY',Buffer.alloc(32,7).toString('base64'));
+    try {
+      expect(connectionCSRF('flow-one')).toBe(connectionCSRF('flow-one'));
+      expect(connectionCSRF('flow-one')).not.toBe(connectionCSRF('flow-two'));
+    } finally { vi.unstubAllEnvs(); }
+  });
+  it('renders escaped browser errors with their status and recovery instructions',async()=>{
+    const response=await browserRoute(async()=>{throw new PublicError(403,'consent_required','Select <repositories>.');});
+    expect(response.status).toBe(403);
+    expect(response.headers.get('Content-Type')).toContain('text/html');
+    const body=await response.text();
+    expect(body).toContain('Select &lt;repositories&gt;.');
+    expect(body).toContain('tap Connect GitHub again');
+    expect((await browserRoute(async()=>Response.redirect('shiplog://github-connected?code=test',303))).status).toBe(303);
   });
 });
 describe('security and attribution',()=>{

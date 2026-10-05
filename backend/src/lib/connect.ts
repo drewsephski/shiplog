@@ -1,8 +1,10 @@
+import { createHmac } from 'node:crypto';
+import { route } from './http';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
 import { db } from './db';
 import { hash } from './domain';
-import { decrypt, PublicError, randomToken, publicURL, required } from './security';
+import { decrypt, PublicError, publicURL, required } from './security';
 import { accessibleRepositories } from './github';
 
 export const FLOW_COOKIE = '__Host-shiplog-connect';
@@ -17,22 +19,37 @@ export async function flow() {
 export function escapeHTML(value: string) {
   return value.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
 }
-export function html(title: string, body: string) {
+export function html(title: string, body: string, status = 200) {
   return new Response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHTML(title)} · Shiplog</title><style>
   :root{color-scheme:light dark;font-family:system-ui;background:light-dark(#faf9f7,#111);color:light-dark(#161616,#eee)}
   body{max-width:520px;margin:7vh auto;padding:24px}h1{font-size:36px;letter-spacing:-1px}p{line-height:1.6;color:light-dark(#555,#aaa)}
   label{display:block;padding:16px 0;border-bottom:1px solid #8884}small{color:light-dark(#666,#aaa)}input{margin-right:12px}
   button,.action{font:inherit;display:inline-block;margin-top:24px;padding:14px 20px;border:0;border-radius:12px;background:light-dark(#171717,#eee);color:light-dark(#fff,#111);text-decoration:none}a{color:inherit}
   </style></head><body><b>Shiplog</b><h1>${escapeHTML(title)}</h1>${body}</body></html>`,{
-    headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store',
-      'Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"},
+    status, headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store',
+      'Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; form-action 'self' shiplog:; base-uri 'none'; frame-ancestors 'none'"},
   });
+}
+/** Keep connection failures readable in the authentication browser. API errors remain JSON. */
+export async function browserRoute(action: () => Promise<Response>) {
+  const response = await route(action);
+  if (response.ok || !response.headers.get('Content-Type')?.includes('application/json')) return response;
+  const error = z.object({error:z.string()}).parse(await response.json());
+  const page = html('Let’s reconnect.', `<p>${escapeHTML(error.error)}</p><p>Close this sign-in window, then tap Connect GitHub again in Shiplog.</p>`,response.status);
+  const retryAfter = response.headers.get('Retry-After');
+  if (retryAfter) page.headers.set('Retry-After',retryAfter);
+  return page;
+}
+/** Stable within a flow so reloading or navigating back cannot invalidate a visible form. */
+export function connectionCSRF(state: string) {
+  return createHmac('sha256',required('TOKEN_ENCRYPTION_KEY')).update(`shiplog-repository-consent:${state}`).digest('base64url');
 }
 export async function repositoryPage() {
   const {state,attempt} = await flow();
+  if (attempt.selection_claimed_at) throw new PublicError(400,'already_used','Your repository selection was saved, but this connection has already been submitted.');
   if (!attempt.access_token) throw new PublicError(401,'github_required','Authorize GitHub first.');
   const repositories = await accessibleRepositories(decrypt(attempt.access_token));
-  const csrf = randomToken();
+  const csrf = connectionCSRF(state);
   const sql = db();
   await sql`UPDATE connect_attempts SET csrf_hash=${hash(csrf)} WHERE state_hash=${hash(state)} AND consumed_at IS NULL`;
   const install = `https://github.com/apps/${encodeURIComponent(required('GITHUB_APP_SLUG'))}/installations/new?state=${encodeURIComponent(state)}`;

@@ -1,10 +1,9 @@
 import { db } from '@/lib/db';
 import { hash } from '@/lib/domain';
-import { flow } from '@/lib/connect';
+import { flow, browserRoute } from '@/lib/connect';
 import { encrypt, equal, PublicError, publicURL } from '@/lib/security';
 import { exchangeGitHub, identity } from '@/lib/github';
-import { route } from '@/lib/http';
-export function GET(request: Request) { return route(async()=>{
+export function GET(request: Request) { return browserRoute(async()=>{
   const params = new URL(request.url).searchParams;
   const {state} = await flow();
   if (!equal(params.get('state') ?? '',state) || !params.get('code')) throw new PublicError(400,'authorization_failed','GitHub authorization was cancelled. Restart in Shiplog.');

@@ -15,11 +15,28 @@ export function boundedSynthesisInput(input: SynthesisInput, includePatches: boo
         return {...file,path:file.path.slice(0,200),patch};
       })}))};
 }
+/** Constrain the provider to canonical identities before validating semantic provenance. */
+export function synthesisSchema(input: SynthesisInput) {
+  const ids = input.evidence.map(evidence => evidence.id);
+  const repositoryIDs = input.contexts.map(context => context.repositoryID);
+  if (!ids.length || !repositoryIDs.length) throw new Error('Evidence and repository context are required');
+  const reserved = new Set(input.existing.filter(entry => entry.userEdited).flatMap(entry => entry.evidenceIDs));
+  const assignable = ids.filter(id => !reserved.has(id));
+  const entry = generatedSchema.shape.entries.element.extend({
+    repositoryID: z.enum(repositoryIDs),
+    evidenceIDs: z.array(z.enum(assignable.length ? assignable : ids)).min(1).max(100),
+  });
+  return generatedSchema.extend({
+    entries: z.array(entry).max(assignable.length ? 30 : 0),
+    narrative: generatedSchema.shape.narrative.extend({evidenceIDs:z.array(z.enum(ids)).max(200)}),
+  });
+}
 /** No tools, provider secrets, or executable actions are exposed to repository text. */
 export class OpenRouterJournalSynthesisService implements JournalSynthesisService {
   async synthesize(input: SynthesisInput) {
+    if (!input.evidence.length) return {entries:[],narrative:{text:'',evidenceIDs:[]}};
     if (JSON.stringify(input).length>200_000) throw new PublicError(422,'context_limit','This day exceeds the bounded AI context. Select fewer repositories.');
-    const schema = z.toJSONSchema(generatedSchema, {target:'draft-7'});
+    const schema = z.toJSONSchema(synthesisSchema(input), {target:'draft-7'});
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions',{
       method:'POST',signal:AbortSignal.timeout(35_000),headers:{authorization:`Bearer ${required('OPENROUTER_API_KEY')}`,'Content-Type':'application/json'},
       body:JSON.stringify({model:required('OPENROUTER_MODEL'),temperature:0.2,max_tokens:6000,
@@ -31,7 +48,7 @@ export class OpenRouterJournalSynthesisService implements JournalSynthesisServic
           'Group related commits and PR/issue events into meaningful work, not one entry per event. Never merge evidence from different repositories.',
           'Group by the developer-facing goal. Commits adding, refining, documenting, or previewing the same feature or branding work belong in one entry; repeated iterations are not separate accomplishments.',
           'Prefer a small set of distinct work themes for an ordinary day, usually 1-4 per repository. Do not force unrelated goals together or list commits as separate entries.',
-          'Each entry must cite the exact provided evidence IDs, and confidence is an estimate of how well the cited evidence supports the wording.',
+          'Each entry must cite the full canonical evidence id field (github:repository:event:externalID), never the externalID or commit SHA alone. Assign each evidence ID to at most one entry. Confidence is an estimate of how well the cited evidence supports the wording.',
           'Describe only observed actions. A commit is work, not proof it was deployed. Opening a PR is not merging it. Closing an issue does not prove a fix.',
           'Commit attribution author supports authorship; attribution committer only supports committing someone else’s work. A merge action alone does not prove the user implemented the PR.',
           'Never claim tests passed, production delivery, customer impact, learning, or completion without explicit supporting evidence.',

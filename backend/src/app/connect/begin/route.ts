@@ -1,10 +1,9 @@
 import { cookies } from 'next/headers';
 import { db } from '@/lib/db';
 import { hash } from '@/lib/domain';
-import { authorizeURL, FLOW_COOKIE } from '@/lib/connect';
+import { authorizeURL, FLOW_COOKIE, browserRoute } from '@/lib/connect';
 import { PublicError } from '@/lib/security';
-import { route } from '@/lib/http';
-export function GET(request: Request) { return route(async()=>{
+export function GET(request: Request) { return browserRoute(async()=>{
   const state = new URL(request.url).searchParams.get('state') ?? '';
   if (!/^[A-Za-z0-9_-]{43}$/.test(state)) throw new PublicError(400,'invalid_state','Restart Connect GitHub.');
   const sql = db();

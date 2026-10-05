@@ -1,13 +1,13 @@
 import { db } from '@/lib/db';
-import { flow, repositoryPage } from '@/lib/connect';
+import { flow, repositoryPage, browserRoute } from '@/lib/connect';
 import { hash } from '@/lib/domain';
 import { accessibleRepositories } from '@/lib/github';
 import { assertSameOrigin, decrypt, equal, PublicError, randomToken } from '@/lib/security';
-import { route } from '@/lib/http';
-export const GET = () => route(repositoryPage);
-export function POST(request: Request) { return route(async()=>{
+export const GET = () => browserRoute(repositoryPage);
+export function POST(request: Request) { return browserRoute(async()=>{
   assertSameOrigin(request);
   const {state,attempt} = await flow();
+  if (attempt.selection_claimed_at) throw new PublicError(400,'already_used','Your repository selection was saved, but this connection has already been submitted.');
   const form = await request.formData();
   if (!attempt.access_token || !equal(hash(String(form.get('csrf'))),attempt.csrf_hash ?? '') || form.get('consent')!=='yes')
     throw new PublicError(403,'consent_required','Select repositories and confirm the data transfer.');
