@@ -1,6 +1,19 @@
 # Verification — October 5, 2026
 
-## Autonomous vertical verification (latest local pass)
+## Live setup and connection fixes
+
+- Production deployment is live at `https://shiplog.fun` on Vercel project `shiplog-agent`. The Vercel-registered domain is attached, verified, and serves HTTPS with a valid certificate. `https://shiplog-agent.vercel.app` remains an active alias for TestFlight build 2; it is not redirected away from API requests.
+- GitHub App **Shiplog Journal**, app ID `5201267`, is installed with read-only Contents, Pull requests, Issues, and Metadata access. Installation access was verified to contain only `drewsephski/shiplog`. GitHub user authorization, repository selection, expiring refresh tokens, and the configured Neon database were exercised live. Callback, installation setup, homepage, and signed webhook URLs now use `shiplog.fun`.
+- Server credentials were provisioned without placing secrets in the native app or tracked files. The dedicated OpenRouter key and configured `openai/gpt-4.1-mini` model were exercised with real attributed evidence. A live production jobs request completed generation and persisted the October 5 journal with a narrative and six entries. The owner subsequently confirmed the generated journal appears in Today on the physical iPhone. Exact first-day latency and factual review remain separate acceptance checks.
+- The physical-device test reported that submitting repository consent failed to return to Shiplog, followed by a `consent_required` error on retry. The browser policy now permits the `shiplog:` callback after form submission, CSRF tokens remain stable across reloads within one flow, and browser failures show recovery instructions. The provenance validator rejected raw commit SHAs from the model; its strict output schema now constrains citations to canonical evidence IDs and excludes protected evidence from generated entries. The corrected live model response passed validation before production generation.
+- **35 backend tests passed**, including ten integration tests on isolated PostgreSQL, plus lint, strict TypeScript, and the production Next.js build. Production checks confirmed Build 2's API returns its pinned first-hop origin, followed by a browser redirect that establishes the secure OAuth cookie on `shiplog.fun`, and both domains serve HTML recovery pages with the native callback policy. The new native build configuration defaults to `shiplog.fun`.
+- The domain migration initially exposed Build 2's strict same-host check on the sign-in start URL. The server now preserves its pinned first hop on the Vercel alias and performs the canonical handoff inside the browser before setting the OAuth cookie. This retains the app's origin protection without requiring a native update. The live server journal was also decoded with the production Swift DTOs and merged twice through the actual in-memory SwiftData store: six entries and one narrative, without duplicates.
+- The background workflow succeeded against `https://shiplog.fun/api/jobs`: [run 37360583642](https://github.com/drewsephski/shiplog/actions/runs/37360583642). Its completed queue returned `processed: 0`; the separate direct production job above returned `processed: 1` and persisted a generated journal.
+- TestFlight **1.0.0 (2)** was signed, uploaded, processed, and assigned to **Shiplog Internal**. Its bundle configuration uses the active Vercel alias. The owner reported reaching the GitHub repository-selection flow on an iPhone. After the connection, schema, and domain compatibility fixes, the owner confirmed that Today displays the generated journal on the physical iPhone in Build 2.
+
+**Remaining acceptance gates:** factual review of generated entries, live edit/regeneration preservation, provider revocation and end-to-end deletion, private-repository handling, exact first-day latency, VoiceOver/extreme Dynamic Type, and updated public App Store privacy responses. APNs is not implemented. Public App Store release has not been submitted.
+
+## Autonomous vertical verification (earlier local pass)
 
 - 23 native core tests passed on macOS and the iOS simulator, including an on-disk V1-to-V2 migration, exact provenance, idempotent merges, and preserved offline edits/deletions.
 - Four native UI journeys passed on the dedicated Shiplog QA simulator (iOS 26.5): GitHub-first onboarding and missing-configuration recovery, manual build/project/reflection, project archive/restore/deletion, and Settings/export/connection disclosure. Screenshots were captured and the onboarding, Today, and GitHub screens reviewed. Result bundle: `.build/DerivedData/Logs/Test/Test-Shiplog-2026.10.05_12-42-23--0500.xcresult`.
@@ -11,7 +24,7 @@
 
 This supersedes the original local snapshot's native UI-test execution gate below. It does not change the previously distributed build 1 or claim a new TestFlight delivery.
 
-**Still unverified:** real GitHub App OAuth/installation selection, live Neon/Vercel configuration, real model factual accuracy and first-day latency, provider revocation/end-to-end deletion, production cron recovery, private-repository handling through the actual configured model provider, real-device acceptance, VoiceOver/extreme Dynamic Type, and updated public App Store privacy responses. APNs is not implemented. See [agent setup and acceptance](../backend/README.md).
+This earlier pass used fixture providers; the live setup above supersedes its provider and delivery gates. See [agent setup and acceptance](../backend/README.md).
 
 ## Original release snapshot — passed
 

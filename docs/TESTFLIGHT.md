@@ -19,7 +19,13 @@ Verified on October 5, 2026:
 
 - After the collaborative browser reconnected, Apple processing was verified complete: version `1.0.0`, build `1` appears in iOS Builds and is assigned to Shiplog Internal. The group shows **1 Tester · 1 Build**, and the owner tester status is **Invited**, dated October 5, 2026. The build list shows one invitation and no installs yet.
 
-TestFlight delivery setup is verified. Invitation acceptance and installation on the physical iPhone remain unverified. [Open the internal group](https://appstoreconnect.apple.com/teams/02799f60-e415-461a-8c86-a1dcf271737a/apps/6819344413/testflight/groups/5b25db42-c245-481e-8891-56cbe841c92d).
+### Build 2 update
+
+Version `1.0.0 (2)` was archived, distribution-signed, uploaded, processed, and assigned to Shiplog Internal on October 5. App Store Connect showed the build ready with its internal group assigned. The build embeds `https://shiplog-agent.vercel.app` as its public agent URL; that alias remains active. Connection starts now direct the browser to `https://shiplog.fun`, and future native builds default to the new domain. No new build is required for the server-side connection and evidence-validation fixes.
+
+Artifacts: `.build/releases/Shiplog-2.xcarchive` and `.build/releases/export-2/Shiplog.ipa`. Xcode reported upload success. The owner reported reaching repository selection on the physical iPhone in Build 2 and supplied the connection error; after the server-side fixes, the owner confirmed that the generated journal appears in Today.
+
+TestFlight delivery, owner-reported Build 2 installation, and the first live GitHub-to-Today journal journey are verified. [Open the internal group](https://appstoreconnect.apple.com/teams/02799f60-e415-461a-8c86-a1dcf271737a/apps/6819344413/testflight/groups/5b25db42-c245-481e-8891-56cbe841c92d).
 
 These settings live in `project.yml` and the generated Xcode project. Regeneration preserves the selected identity. The local macOS Developer ID certificate is not an iOS signing certificate. Xcode needs the enrolled Apple account or supported App Store Connect API authentication to create the iOS signing assets.
 
