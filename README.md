@@ -1,5 +1,7 @@
 # Shiplog
 
+The folded S identity is shared by the app icon, Today, onboarding and Settings. Source artwork, scalable logo exports and regeneration instructions live in [brand/README.md](brand/README.md).
+
 A native iPhone journal for the things you build. Swift 6, SwiftUI, SwiftData. iOS 18 or later. No third-party runtime dependencies, account requirement, network traffic, or production sample data.
 
 ## Run
