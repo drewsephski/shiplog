@@ -13,10 +13,12 @@ struct EntryDetailView: View {
     init(entry: BuildEntry) {
         self.entry = entry
         let ids = entry.evidenceIDs
-        _remoteSources = Query(filter: #Predicate<SourceActivity> { ids.contains($0.identity) }, sort: \SourceActivity.occurredAt)
+        _remoteSources = Query(
+            filter: #Predicate<SourceActivity> { ids.contains($0.identity) }, sort: \SourceActivity.occurredAt)
     }
     private var sources: [SourceActivity] {
-        (entry.sources + remoteSources).reduce(into: [String: SourceActivity]()) { $0[$1.identity] = $1 }.values.sorted { $0.occurredAt < $1.occurredAt }
+        (entry.sources + remoteSources).reduce(into: [String: SourceActivity]()) { $0[$1.identity] = $1 }.values.sorted
+        { $0.occurredAt < $1.occurredAt }
     }
     private var originLabel: String {
         switch entry.origin {
@@ -47,7 +49,8 @@ struct EntryDetailView: View {
                 Label(originLabel, systemImage: "pencil.line")
                     .font(.caption).foregroundStyle(.secondary)
                 if let confidence = entry.confidence {
-                    Text("Model confidence: \(Int(confidence * 100))% · Review against the sources.").font(.caption).foregroundStyle(.secondary)
+                    Text("Model confidence: \(Int(confidence * 100))% · Review against the sources.").font(.caption)
+                        .foregroundStyle(.secondary)
                 }
                 if !sources.isEmpty {
                     Eyebrow(text: "Source activity")

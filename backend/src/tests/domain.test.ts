@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vitest';
-import { dayInterval, evidenceID, generationHash, validateSynthesis, type ActivityEvidence, type SynthesisInput } from '../lib/domain';
+import { describe, it, expect, vi } from 'vitest';
+import { z } from 'zod';
+import { dayInterval, evidenceID, generationHash, validateSynthesis, reconciliationDays, type ActivityEvidence, type SynthesisInput } from '../lib/domain';
 import { matchEntries } from '../lib/journal';
 import { createHmac } from 'node:crypto';
 import { challenge, encrypt, decrypt, verifyWebhook } from '../lib/security';
 import { normalizeWebhook } from '../lib/webhooks';
-import { safeFile, isUserCommit } from '../lib/github';
+import { safeFile, isUserCommit, github, collectActivity } from '../lib/github';
 
 const evidence: ActivityEvidence = {id:evidenceID('12','commit','abc'),repositoryID:'12',externalID:'abc',kind:'commit',
   title:'Improve onboarding',body:'',occurredAt:'2026-10-05T16:00:00.000Z',url:'https://github.com/test/repo/commit/abc',actorID:'1',files:[]};
@@ -23,6 +24,10 @@ describe('civil days and identity',()=>{
     expect(evidenceID('12','issue','42:closed')).toBe('github:12:issue:42%3Aclosed');
     expect(evidenceID('13','issue','42')).not.toBe(evidenceID('12','issue','42'));
     expect(evidenceID('12','pullRequest','42')).not.toBe(evidenceID('12','issue','42'));
+  });
+  it('backfills missed civil days across DST with a seven-day maximum',()=>{
+    expect(reconciliationDays(new Date('2026-03-07T18:00:00Z'),'America/Chicago',new Date('2026-03-09T18:00:00Z'))).toEqual(['2026-03-07','2026-03-08','2026-03-09']);
+    expect(reconciliationDays(new Date('2025-01-01T00:00:00Z'),'America/Chicago',new Date('2026-10-05T18:00:00Z'))).toHaveLength(7);
   });
 });
 describe('synthesis provenance',()=>{
@@ -83,5 +88,34 @@ describe('security and attribution',()=>{
     const normalized=normalizeWebhook('pull_request',payload);
     expect(normalized?.actorID).toBe('2');expect(normalized?.title).toContain('Merged');
     expect(normalizeWebhook('pull_request',{...payload,action:'edited'})).toBeNull();
+  });
+  it('distinguishes rate limits from access revocation and retains the retry delay',async()=>{
+    const fetch=vi.spyOn(globalThis,'fetch');
+    try {
+      fetch.mockResolvedValueOnce(new Response(JSON.stringify({message:'API rate limit exceeded'}),{status:403,headers:{'retry-after':'120'}}));
+      await expect(github('/test','test-only-token',z.object({}))).rejects.toMatchObject({code:'github_rate_limited',retryAfterSeconds:120});
+      fetch.mockResolvedValueOnce(new Response(JSON.stringify({message:'Resource not accessible'}),{status:403}));
+      await expect(github('/test','test-only-token',z.object({}))).rejects.toMatchObject({code:'github_access'});
+    } finally { fetch.mockRestore(); }
+  });
+  it('accepts heterogeneous PR timelines without attributing comments or teammate actions',async()=>{
+    const fetch=vi.spyOn(globalThis,'fetch');
+    const now=new Date().toISOString();
+    try {
+      fetch.mockImplementation(async url=>{
+        const path=new URL(String(url)).pathname;
+        const body=path.endsWith('/branches') ? [{name:'main'}]
+          : path.endsWith('/commits') || path.endsWith('/files') ? []
+          : path.endsWith('/issues') ? [{id:42,number:42,title:'Onboarding',body:'Context',html_url:'https://github.com/test/repo/pull/42',user:{id:2,login:'teammate'},
+            created_at:'2026-01-01T00:00:00Z',updated_at:now,pull_request:{}}]
+          : [{event:'committed',sha:'abc'}, {event:'commented',id:3,user:{id:1,login:'user'},created_at:now},
+            {event:'merged',id:4,actor:{id:1,login:'user'},created_at:now},
+            {event:'closed',id:5,actor:{id:2,login:'teammate'},created_at:now}];
+        return Response.json(body);
+      });
+      const result=await collectActivity({id:'12',installationID:'99',name:'Repo',fullName:'test/repo',url:'https://github.com/test/repo',description:'',isPrivate:true,defaultBranch:'main'},
+        'test-only-token','1',{start:'2026-01-02T00:00:00Z',end:'2027-01-01T00:00:00Z'},false);
+      expect(result).toHaveLength(1);expect(result[0].title).toBe('Merged PR #42: Onboarding');expect(result[0].actorID).toBe('1');
+    } finally { fetch.mockRestore(); }
   });
 });

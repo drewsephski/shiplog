@@ -16,7 +16,8 @@ import SwiftData
             var projectMap: [String: Project] = [:]
             for repo in journal.repositories {
                 let connection = connections.first { $0.ownerID == ownerID && $0.repositoryID == repo.id }
-                let project = connection?.project ?? projects.first { $0.repositoryURL == repo.url }
+                let project =
+                    connection?.project ?? projects.first { $0.repositoryURL == repo.url }
                     ?? Project(name: repo.name, overview: repo.description, repositoryURL: repo.url)
                 if project.modelContext == nil { context.insert(project) }
                 projectMap[repo.id] = project
@@ -28,19 +29,24 @@ import SwiftData
                     connection.isPrivate = repo.isPrivate
                     connection.isEnabled = repo.isEnabled
                 } else {
-                    let newConnection = ConnectedRepository(ownerID: ownerID, repositoryID: repo.id, installationID: repo.installationID,
+                    let newConnection = ConnectedRepository(
+                        ownerID: ownerID, repositoryID: repo.id, installationID: repo.installationID,
                         fullName: repo.fullName, url: repo.url, isPrivate: repo.isPrivate, project: project)
                     newConnection.isEnabled = repo.isEnabled
                     context.insert(newConnection)
                 }
             }
             for connection in connections where connection.ownerID == ownerID {
-                if !journal.repositories.contains(where: { $0.id == connection.repositoryID }) { connection.isEnabled = false }
+                if !journal.repositories.contains(where: { $0.id == connection.repositoryID }) {
+                    connection.isEnabled = false
+                }
             }
             for evidence in journal.evidence {
-                let source = sources.first { $0.identity == evidence.id } ?? SourceActivity(
-                    provider: "github", repositoryID: evidence.repositoryID, externalID: evidence.externalID,
-                    kind: evidence.kind, title: evidence.title, url: evidence.url, occurredAt: evidence.occurredAt)
+                let source =
+                    sources.first { $0.identity == evidence.id }
+                    ?? SourceActivity(
+                        provider: "github", repositoryID: evidence.repositoryID, externalID: evidence.externalID,
+                        kind: evidence.kind, title: evidence.title, url: evidence.url, occurredAt: evidence.occurredAt)
                 if source.modelContext == nil { context.insert(source) }
                 source.title = evidence.title
                 source.url = evidence.url
@@ -48,11 +54,15 @@ import SwiftData
             }
             let incoming = Set(journal.entries.map(\.id))
             for entry in allEntries where entry.ownerID == ownerID && entry.generationID == generation.id {
-                if entry.origin == .generated && !incoming.contains(entry.id) && !suppressed.contains(entry.id) { context.delete(entry) }
+                if entry.origin == .generated && !incoming.contains(entry.id) && !suppressed.contains(entry.id) {
+                    context.delete(entry)
+                }
             }
             for remote in journal.entries where !suppressed.contains(remote.id) {
-                let entry = allEntries.first { $0.remoteID == remote.id }
-                    ?? BuildEntry(id: remote.id, title: remote.title, kind: remote.kind, occurredAt: remote.occurredAt,
+                let entry =
+                    allEntries.first { $0.remoteID == remote.id }
+                    ?? BuildEntry(
+                        id: remote.id, title: remote.title, kind: remote.kind, occurredAt: remote.occurredAt,
                         project: projectMap[remote.repositoryID], origin: .generated)
                 if entry.origin == .userEditedGenerated { continue }
                 if entry.modelContext == nil { context.insert(entry) }
@@ -75,20 +85,29 @@ import SwiftData
                 let parts = journal.day.split(separator: "-").compactMap { Int($0) }
                 let start = calendar.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2]))!
                 let key = JournalLogic.reflectionKey(for: start, calendar: calendar)
-                let summary = try context.fetch(FetchDescriptor<JournalSummary>(predicate: #Predicate { $0.key == key })).first
+                let summary = try context.fetch(
+                    FetchDescriptor<JournalSummary>(predicate: #Predicate { $0.key == key })
+                ).first
                 if summary == nil || summary?.originRawValue == SummaryOrigin.generatedDraft.rawValue {
                     if narrative.text.isEmpty {
                         if let summary { context.delete(summary) }
                     } else {
-                        let value = summary ?? JournalSummary(key: key, period: .daily, startDate: start,
-                            endDate: calendar.date(byAdding: .day, value: 1, to: start)!, text: narrative.text, origin: .generatedDraft)
+                        let value =
+                            summary
+                            ?? JournalSummary(
+                                key: key, period: .daily, startDate: start,
+                                endDate: calendar.date(byAdding: .day, value: 1, to: start)!, text: narrative.text,
+                                origin: .generatedDraft)
                         if value.modelContext == nil { context.insert(value) }
                         value.text = narrative.text
-                        value.originRawValue = (narrative.userEdited ? SummaryOrigin.userEditedGenerated : .generatedDraft).rawValue
+                        value.originRawValue =
+                            (narrative.userEdited ? SummaryOrigin.userEditedGenerated : .generatedDraft).rawValue
                         value.remoteID = narrative.id
                         value.ownerID = ownerID
                         value.evidenceIDs = narrative.evidenceIDs
-                        value.inputEntryIDs = journal.entries.filter { !$0.evidenceIDs.filter(narrative.evidenceIDs.contains).isEmpty }.map(\.id)
+                        value.inputEntryIDs = journal.entries.filter {
+                            !$0.evidenceIDs.filter(narrative.evidenceIDs.contains).isEmpty
+                        }.map(\.id)
                         value.updatedAt = generation.generatedAt
                     }
                 }
@@ -100,15 +119,21 @@ import SwiftData
                 run.promptVersion = generation.promptVersion
                 run.generatedAt = generation.generatedAt
             } else {
-                context.insert(GenerationRun(id: id, ownerID: ownerID, localDay: journal.day, timeZone: journal.timeZone,
-                    evidenceHash: generation.evidenceHash, promptVersion: generation.promptVersion, generatedAt: generation.generatedAt))
+                context.insert(
+                    GenerationRun(
+                        id: id, ownerID: ownerID, localDay: journal.day, timeZone: journal.timeZone,
+                        evidenceHash: generation.evidenceHash, promptVersion: generation.promptVersion,
+                        generatedAt: generation.generatedAt))
             }
             let key = "\(ownerID):\(journal.day):\(journal.timeZone)"
-            let checkpoint = try context.fetch(FetchDescriptor<SyncCheckpoint>(predicate: #Predicate { $0.key == key })).first
+            let checkpoint = try context.fetch(FetchDescriptor<SyncCheckpoint>(predicate: #Predicate { $0.key == key }))
+                .first
             if let checkpoint {
                 checkpoint.syncedAt = .now
                 checkpoint.evidenceHash = generation.evidenceHash
-            } else { context.insert(SyncCheckpoint(key: key, syncedAt: .now, evidenceHash: generation.evidenceHash)) }
+            } else {
+                context.insert(SyncCheckpoint(key: key, syncedAt: .now, evidenceHash: generation.evidenceHash))
+            }
             try JournalStore.save(context)
         } catch {
             context.rollback()
@@ -134,27 +159,38 @@ import SwiftData
         let repos = Set(journal.repositories.map(\.id))
         let sources = Dictionary(uniqueKeysWithValues: journal.evidence.map { ($0.id, $0) })
         for repo in journal.repositories {
-            guard URL(string: repo.url)?.scheme == "https", URL(string: repo.url)?.host == "github.com" else { throw AgentError.invalidResponse }
+            guard URL(string: repo.url)?.scheme == "https", URL(string: repo.url)?.host == "github.com" else {
+                throw AgentError.invalidResponse
+            }
         }
         for source in journal.evidence {
-            guard repos.contains(source.repositoryID), source.id == EvidenceIdentity.make(provider: "github", repositoryID: source.repositoryID,
-                kind: source.kind, externalID: source.externalID), URL(string: source.url)?.scheme == "https",
-                URL(string: source.url)?.host == "github.com" else { throw AgentError.invalidResponse }
+            guard repos.contains(source.repositoryID),
+                source.id
+                    == EvidenceIdentity.make(
+                        provider: "github", repositoryID: source.repositoryID,
+                        kind: source.kind, externalID: source.externalID), URL(string: source.url)?.scheme == "https",
+                URL(string: source.url)?.host == "github.com"
+            else { throw AgentError.invalidResponse }
         }
         for entry in journal.entries {
             guard repos.contains(entry.repositoryID), !entry.title.isEmpty, entry.title.count <= 240,
                 entry.detail.count <= 20_000, entry.confidence.isFinite, (0...1).contains(entry.confidence),
                 !entry.evidenceIDs.isEmpty, Set(entry.evidenceIDs).count == entry.evidenceIDs.count,
-                entry.evidenceIDs.allSatisfy({ sources[$0]?.repositoryID == entry.repositoryID }) else { throw AgentError.invalidResponse }
+                entry.evidenceIDs.allSatisfy({ sources[$0]?.repositoryID == entry.repositoryID })
+            else { throw AgentError.invalidResponse }
         }
         if let narrative = journal.narrative {
-            guard narrative.text.count <= 20_000, narrative.evidenceIDs.allSatisfy({ sources[$0] != nil }) else { throw AgentError.invalidResponse }
+            guard narrative.text.count <= 20_000, narrative.evidenceIDs.allSatisfy({ sources[$0] != nil }) else {
+                throw AgentError.invalidResponse
+            }
         }
     }
 
     static func enqueue(_ edit: JournalEdit, ownerID: String, context: ModelContext) throws {
-        context.insert(JournalMutation(id: edit.mutationID, ownerID: ownerID, targetID: edit.targetID,
-            targetType: edit.targetType, payload: try AgentCoding.encoder().encode(edit)))
+        context.insert(
+            JournalMutation(
+                id: edit.mutationID, ownerID: ownerID, targetID: edit.targetID,
+                targetType: edit.targetType, payload: try AgentCoding.encoder().encode(edit)))
     }
 
     static func evidence(for entry: BuildEntry, context: ModelContext) throws -> [SourceActivity] {

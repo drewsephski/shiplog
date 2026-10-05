@@ -29,9 +29,18 @@ struct TodayView: View {
                     Text("Your work.\nWith its story.")
                         .font(.largeTitle.weight(.bold)).tracking(-1)
                         .fixedSize(horizontal: false, vertical: true)
-                    Text(connection.isConnected ? "From your selected GitHub repositories." : "Connect GitHub. Keep the story of what you build.")
-                        .font(.subheadline).foregroundStyle(.secondary)
+                    Text(
+                        connection.isConnected
+                            ? "From your selected GitHub repositories."
+                            : "Connect GitHub. Keep the story of what you build."
+                    )
+                    .font(.subheadline).foregroundStyle(.secondary)
                 }.padding(.top, 12)
+                if !connection.isConnected && !todayEntries.isEmpty {
+                    PrimaryAction(title: "Connect GitHub", symbol: "arrow.right") {
+                        Task { await connection.connect(context: context) }
+                    }.disabled(connection.isBusy).accessibilityIdentifier("today.github")
+                }
                 WeekStrip(entries: entries.map(\.record), now: now)
                 Divider()
                 ConnectionStatusView()
@@ -46,12 +55,22 @@ struct TodayView: View {
                     }
                     if todayEntries.isEmpty {
                         JournalEmptyState(
-                            symbol: "text.alignleft", title: connection.isConnected ? "Your story is taking shape." : "Your work is already the starting point.",
-                            message: connection.isConnected ? "Shiplog looks for work attributable to you. A quiet day stays a quiet page." : "Choose repositories and let Shiplog write today from your commits, pull requests, and issues.")
-                        PrimaryAction(title: connection.isConnected ? "Analyze today" : "Connect GitHub", symbol: "arrow.right") {
+                            symbol: "text.alignleft",
+                            title: connection.isConnected
+                                ? "Your story is taking shape." : "Your work is already the starting point.",
+                            message: connection.isConnected
+                                ? "Shiplog looks for work attributable to you. A quiet day stays a quiet page."
+                                : "Choose repositories and let Shiplog write today from your commits, pull requests, and issues."
+                        )
+                        PrimaryAction(
+                            title: connection.isConnected ? "Analyze today" : "Connect GitHub", symbol: "arrow.right"
+                        ) {
                             Task {
-                                if connection.isConnected { await connection.refresh(context: context, generate: true) }
-                                else { await connection.connect(context: context) }
+                                if connection.isConnected {
+                                    await connection.refresh(context: context, generate: true)
+                                } else {
+                                    await connection.connect(context: context)
+                                }
                             }
                         }.disabled(connection.isBusy).accessibilityIdentifier("today.github")
                         Button("Log a build manually", systemImage: "plus") { sheet = .entry }
@@ -80,7 +99,9 @@ struct TodayView: View {
                 VStack(alignment: .leading, spacing: 14) {
                     Divider()
                     HStack {
-                        Eyebrow(text: reflection?.originRawValue == SummaryOrigin.manual.rawValue || !connection.isConnected ? "Daily reflection" : "Daily story")
+                        Eyebrow(
+                            text: reflection?.originRawValue == SummaryOrigin.manual.rawValue || !connection.isConnected
+                                ? "Daily reflection" : "Daily story")
                         Spacer()
                         Button(reflection == nil ? "Add" : "Edit") { sheet = .reflection }
                             .font(.subheadline.weight(.medium)).frame(minHeight: 44)
@@ -88,8 +109,11 @@ struct TodayView: View {
                     }
                     if let reflection {
                         Text(reflection.text).font(.body).fixedSize(horizontal: false, vertical: true)
-                        Label(reflection.originRawValue == SummaryOrigin.generatedDraft.rawValue ? "AI draft · Based on your source activity" : "Written by you", systemImage: "pencil")
-                            .font(.caption).foregroundStyle(.secondary)
+                        Label(
+                            reflection.originRawValue == SummaryOrigin.generatedDraft.rawValue
+                                ? "AI draft · Based on your source activity" : "Written by you", systemImage: "pencil"
+                        )
+                        .font(.caption).foregroundStyle(.secondary)
                     } else {
                         Text("What moved forward? What did you learn?")
                             .font(.subheadline).foregroundStyle(.secondary)

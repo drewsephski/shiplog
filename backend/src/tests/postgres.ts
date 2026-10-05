@@ -5,9 +5,9 @@ import { z } from 'zod';
 const querySchema = z.object({query:z.string(),params:z.array(z.unknown())});
 /** Exercise the production Neon SQL against an isolated real PostgreSQL instance. No SQL mocks. */
 export function installPostgresTransport(url: string) {
-  const pool = new Pool({connectionString:url,types:{getTypeParser:()=>value=>value}});
+  const pool = new Pool({connectionString:url,types:{getTypeParser:()=>(value: string)=>value}});
   const previous = neonConfig.fetchFunction;
-  neonConfig.fetchFunction = async (_url, init) => {
+  neonConfig.fetchFunction = async (_url: RequestInfo | URL, init?: RequestInit) => {
     const body = JSON.parse(String(init?.body));
     const client = await pool.connect();
     const transaction = 'queries' in body;

@@ -2,7 +2,8 @@ import Foundation
 
 enum EvidenceIdentity {
     static func make(provider: String, repositoryID: String, kind: String, externalID: String) -> String {
-        let allowed = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.!~*'()")
+        let allowed = CharacterSet(
+            charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.!~*'()")
         return [provider, repositoryID, kind, externalID].map {
             $0.addingPercentEncoding(withAllowedCharacters: allowed) ?? $0
         }.joined(separator: ":")
@@ -102,10 +103,13 @@ struct JournalEdit: Codable, Sendable {
 }
 
 enum AgentError: LocalizedError {
-    case notConfigured, invalidResponse, failed(String), credentialFailure
+    case notConfigured, invalidResponse
+    case failed(String)
+    case credentialFailure
     var errorDescription: String? {
         switch self {
-        case .notConfigured: "GitHub connection needs a configured Shiplog agent in this build. You can keep a journal manually meanwhile."
+        case .notConfigured:
+            "GitHub connection needs a configured Shiplog agent in this build. You can keep a journal manually meanwhile."
         case .invalidResponse: "The agent returned an invalid journal. Your saved journal hasn’t changed."
         case .failed(let message): message
         case .credentialFailure: "Your secure connection couldn’t be saved or opened. Please try connecting again."

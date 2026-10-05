@@ -90,13 +90,25 @@ import XCTest
         XCTAssertTrue(app.staticTexts["Every build has a home."].waitForExistence(timeout: 5))
     }
 
+    func testGitHubFirstOnboardingAndUnconfiguredRecovery() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "-AppleInterfaceStyle", "Dark"]
+        app.launch()
+        XCTAssertTrue(app.buttons["onboarding.github"].waitForExistence(timeout: 15))
+        app.buttons["onboarding.github"].tap()
+        XCTAssertTrue(app.staticTexts["connection.error"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["connection.error"].firstMatch.label.contains("configured Shiplog agent"))
+        XCTAssertTrue(app.buttons["onboarding.start"].isEnabled)
+        screenshot("GitHub — configuration recovery")
+    }
+
     func testSettingsExportAndConnectionDisclosure() {
         let app = launch()
         app.buttons["Settings"].tap()
         app.buttons["settings.export"].tap()
         XCTAssertTrue(app.buttons["Share journal export"].waitForExistence(timeout: 5))
         app.staticTexts["GitHub"].tap()
-        XCTAssertTrue(app.staticTexts["For now, your journal starts with you."].waitForExistence(timeout: 5))
-        screenshot("GitHub — coming later")
+        XCTAssertTrue(app.staticTexts["Your activity.\nThe bigger picture."].waitForExistence(timeout: 5))
+        screenshot("GitHub — connection and privacy")
     }
 }

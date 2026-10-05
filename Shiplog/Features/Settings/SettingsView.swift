@@ -26,7 +26,8 @@ struct SettingsView: View {
                         HStack {
                             Label("GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
                             Spacer()
-                            Text(connection.isConnected ? "Connected" : "Connect").font(.caption).foregroundStyle(.secondary)
+                            Text(connection.isConnected ? "Connected" : "Connect").font(.caption).foregroundStyle(
+                                .secondary)
                         }
                     }
                 }

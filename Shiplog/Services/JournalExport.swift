@@ -32,7 +32,11 @@ struct JournalExport: Codable {
         let promptVersion: String
         let generatedAt: Date
     }
-    struct CheckpointExport: Codable { let key: String; let syncedAt: Date; let evidenceHash: String }
+    struct CheckpointExport: Codable {
+        let key: String
+        let syncedAt: Date
+        let evidenceHash: String
+    }
 
     struct ProjectExport: Codable {
         let id: UUID
@@ -77,7 +81,9 @@ struct JournalExport: Codable {
     }
 
     @MainActor private static func sourceExport(_ source: SourceActivity) -> SourceExport {
-        SourceExport(identity: source.identity, provider: source.provider, repositoryID: source.repositoryID, externalID: source.externalID,
+        SourceExport(
+            identity: source.identity, provider: source.provider, repositoryID: source.repositoryID,
+            externalID: source.externalID,
             kind: source.kind, title: source.title, url: source.url, occurredAt: source.occurredAt)
     }
 
@@ -101,22 +107,36 @@ struct JournalExport: Codable {
                 EntryExport(
                     record: entry.record, origin: entry.originRawValue, createdAt: entry.createdAt,
                     updatedAt: entry.updatedAt,
-                    sources: (entry.sources + allSources.filter { source in entry.evidenceIDs.contains(source.identity) })
-                        .reduce(into: [String: SourceActivity]()) { $0[$1.identity] = $1 }.values.sorted { $0.identity < $1.identity }.map(sourceExport),
-                    remoteID: entry.remoteID, ownerID: entry.ownerID, confidence: entry.confidence, evidenceIDs: entry.evidenceIDs)
+                    sources: (entry.sources
+                        + allSources.filter { source in entry.evidenceIDs.contains(source.identity) })
+                        .reduce(into: [String: SourceActivity]()) { $0[$1.identity] = $1 }.values.sorted {
+                            $0.identity < $1.identity
+                        }.map(sourceExport),
+                    remoteID: entry.remoteID, ownerID: entry.ownerID, confidence: entry.confidence,
+                    evidenceIDs: entry.evidenceIDs)
             },
             reflections: summaries.map {
                 ReflectionExport(
                     key: $0.key, period: $0.periodRawValue, startDate: $0.startDate,
                     endDate: $0.endDate, text: $0.text, origin: $0.originRawValue,
-                    updatedAt: $0.updatedAt, inputEntryIDs: $0.inputEntryIDs, evidenceIDs: $0.evidenceIDs, remoteID: $0.remoteID)
+                    updatedAt: $0.updatedAt, inputEntryIDs: $0.inputEntryIDs, evidenceIDs: $0.evidenceIDs,
+                    remoteID: $0.remoteID)
             },
             evidence: allSources.sorted { $0.identity < $1.identity }.map(sourceExport),
-            repositories: repositories.map { RepositoryExport(ownerID: $0.ownerID, repositoryID: $0.repositoryID, installationID: $0.installationID,
-                fullName: $0.fullName, url: $0.url, isPrivate: $0.isPrivate, isEnabled: $0.isEnabled, projectID: $0.project?.id) },
-            generations: generations.map { GenerationExport(id: $0.id, ownerID: $0.ownerID, localDay: $0.localDay, timeZone: $0.timeZone,
-                evidenceHash: $0.evidenceHash, promptVersion: $0.promptVersion, generatedAt: $0.generatedAt) },
-            checkpoints: checkpoints.map { CheckpointExport(key: $0.key, syncedAt: $0.syncedAt, evidenceHash: $0.evidenceHash) },
+            repositories: repositories.map {
+                RepositoryExport(
+                    ownerID: $0.ownerID, repositoryID: $0.repositoryID, installationID: $0.installationID,
+                    fullName: $0.fullName, url: $0.url, isPrivate: $0.isPrivate, isEnabled: $0.isEnabled,
+                    projectID: $0.project?.id)
+            },
+            generations: generations.map {
+                GenerationExport(
+                    id: $0.id, ownerID: $0.ownerID, localDay: $0.localDay, timeZone: $0.timeZone,
+                    evidenceHash: $0.evidenceHash, promptVersion: $0.promptVersion, generatedAt: $0.generatedAt)
+            },
+            checkpoints: checkpoints.map {
+                CheckpointExport(key: $0.key, syncedAt: $0.syncedAt, evidenceHash: $0.evidenceHash)
+            },
             pendingEdits: try mutations.map { try AgentCoding.decoder().decode(JournalEdit.self, from: $0.payload) })
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601

@@ -12,3 +12,5 @@ backend/node_modules/
 backend/.next/
 backend/tsconfig.tsbuildinfo
 backend/coverage/
+
+!backend/.env.example

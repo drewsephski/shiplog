@@ -15,15 +15,26 @@ if [[ -e "$SHIPLOG_ARCHIVE_PATH" || -e "$SHIPLOG_EXPORT_PATH" ]]; then
   exit 1
 fi
 
+SHIPLOG_AGENT_BUILD_SETTINGS=()
+if [[ -n "${SHIPLOG_AGENT_URL:-}" ]]; then
+  SHIPLOG_AGENT_BUILD_SETTINGS+=("SHIPLOG_AGENT_URL=$SHIPLOG_AGENT_URL")
+fi
+
 xcrun swift-format lint --strict --recursive Shiplog ShiplogTests ShiplogUITests
 xcodebuild -project Shiplog.xcodeproj -scheme Shiplog -configuration Release \
   -destination 'generic/platform=iOS' \
   -derivedDataPath .build/ReleaseDerivedData \
   -archivePath "$SHIPLOG_ARCHIVE_PATH" \
   CODE_SIGNING_ALLOWED=NO \
-  CURRENT_PROJECT_VERSION="$SHIPLOG_RELEASE_BUILD" archive
+  CURRENT_PROJECT_VERSION="$SHIPLOG_RELEASE_BUILD" "${SHIPLOG_AGENT_BUILD_SETTINGS[@]}" archive
 
 SHIPLOG_ARCHIVED_APP="$SHIPLOG_ARCHIVE_PATH/Products/Applications/Shiplog.app"
+SHIPLOG_AGENT_VERIFY_ARGS=()
+if [[ -n "${SHIPLOG_AGENT_URL:-}" ]]; then
+  SHIPLOG_AGENT_VERIFY_ARGS+=(--expected-url "$SHIPLOG_AGENT_URL")
+fi
+python3 scripts/check-agent-config.py "$SHIPLOG_ARCHIVED_APP" \
+  --build-number "$SHIPLOG_RELEASE_BUILD" "${SHIPLOG_AGENT_VERIFY_ARGS[@]}"
 SHIPLOG_ARCHIVED_ID=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$SHIPLOG_ARCHIVED_APP/Info.plist")
 if [[ "$SHIPLOG_ARCHIVED_ID" != 'com.drewsepeczi.shiplog' ]]; then
   print -u2 "Unexpected archived bundle ID: $SHIPLOG_ARCHIVED_ID"

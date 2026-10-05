@@ -1,6 +1,19 @@
 # Verification — October 5, 2026
 
-## Passed
+## Autonomous vertical verification (latest local pass)
+
+- 23 native core tests passed on macOS and the iOS simulator, including an on-disk V1-to-V2 migration, exact provenance, idempotent merges, and preserved offline edits/deletions.
+- Four native UI journeys passed on the dedicated Shiplog QA simulator (iOS 26.5): GitHub-first onboarding and missing-configuration recovery, manual build/project/reflection, project archive/restore/deletion, and Settings/export/connection disclosure. Screenshots were captured and the onboarding, Today, and GitHub screens reviewed. Result bundle: `.build/DerivedData/Logs/Test/Test-Shiplog-2026.10.05_12-42-23--0500.xcresult`.
+- 27 backend tests passed, including ten integration cases against an isolated real PostgreSQL instance using the production Neon SQL. GitHub/model calls were controlled fixtures. Checks cover one-time PKCE exchange, ownership, incremental IDs/hash stability, protected edits/deletes, expired leases, access revocation, webhook replay/teammate filtering, disconnect, durable day jobs, phone-independent scheduling, paged history including PostgreSQL microsecond precision, and regeneration after edits.
+- Strict Swift formatting, Release/Debug iPhone source checking, native UI-test source checking, backend lint/strict TypeScript, production Next.js build, and privacy/Info.plist validation passed. A Release simulator package verified that the configured public agent URL, `shiplog` callback scheme, and an overridden build number survive Info.plist processing; the archive script now checks this.
+- V1 model declarations are unchanged from `3aeca56`; aliases and the migration plan now live with V2.
+- The collaborative browser loaded the local backend page and confirmed unauthenticated journal requests return 401. Screenshot automation failed, so no web screenshot or live authentication acceptance is claimed.
+
+This supersedes the original local snapshot's native UI-test execution gate below. It does not change the previously distributed build 1 or claim a new TestFlight delivery.
+
+**Still unverified:** real GitHub App OAuth/installation selection, live Neon/Vercel configuration, real model factual accuracy and first-day latency, provider revocation/end-to-end deletion, production cron recovery, private-repository handling through the actual configured model provider, real-device acceptance, VoiceOver/extreme Dynamic Type, and updated public App Store privacy responses. APNs is not implemented. See [agent setup and acceptance](../backend/README.md).
+
+## Original release snapshot — passed
 
 - **17 XCTest tests on macOS**, using the actual app domain, validation, SwiftData schema, storage operations and exporter via `Package.swift`. Ten domain cases and seven persistence cases passed. Evidence: [core-tests.txt](evidence/core-tests.txt).
 - **Complete Release iPhone source type check**, targeting arm64 iOS 18 against the installed iPhoneOS SDK, with Swift 6 and complete strict concurrency. Exit 0, no diagnostics.

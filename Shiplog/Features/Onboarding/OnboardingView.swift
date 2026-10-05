@@ -33,7 +33,13 @@ struct OnboardingView: View {
         }
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 12) {
-                if connection.isBusy { ProgressView(connection.status).font(.subheadline) }
+                if connection.isBusy {
+                    ProgressView(connection.status).font(.subheadline)
+                    if connection.isConnected {
+                        Button("View journal while Shiplog analyzes", action: onContinue).font(.subheadline).frame(
+                            minHeight: 44)
+                    }
+                }
                 if let error = connection.errorMessage {
                     Text(error).font(.caption).foregroundStyle(.secondary).accessibilityIdentifier("connection.error")
                 }

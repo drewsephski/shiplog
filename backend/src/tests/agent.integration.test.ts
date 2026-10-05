@@ -7,10 +7,12 @@ import { hash, localDay, evidenceID, type ActivityEvidence, type SynthesisInput 
 import { challenge, encrypt } from '../lib/security';
 import { authenticate } from '../lib/auth';
 import { enqueue, readJournal, generate } from '../lib/journal';
-import { applyEdits } from '../lib/edits';
+import { applyEdits, enqueueEditedJournals } from '../lib/edits';
 import { receiveWebhook } from '../lib/webhooks';
 import { POST as exchange } from '../app/api/connect/exchange/route';
 import { DELETE as disconnect } from '../app/api/connection/route';
+import { GET as history } from '../app/api/journals/route';
+import { runJob, scheduleDue } from '../lib/jobs';
 
 const control = vi.hoisted(()=>({evidence:[] as unknown[],available:true}));
 vi.mock('../lib/github',()=>({
@@ -112,5 +114,43 @@ describe.skipIf(!testURL)('agent on real PostgreSQL',()=>{
     const response=await disconnect(new Request('https://agent.test/api/connection',{method:'DELETE',headers:{authorization:`Bearer ${token}`}}));
     expect(response.status).toBe(200);expect(await sql`SELECT * FROM jobs`).toHaveLength(0);expect(await sql`SELECT * FROM sessions`).toHaveLength(0);
     expect((await sql`SELECT access_token FROM users WHERE id=${userID}`)[0].access_token).toBe('');
+  });
+  it('executes a durable day job and pages server history with an incremental watermark',async()=>{
+    const id=await enqueue(userID,day);
+    expect(await runJob(id,service)).toBe(true);
+    const sql=db();expect((await sql`SELECT status FROM jobs WHERE id=${id}`)[0].status).toBe('completed');
+    await sql`INSERT INTO sessions(token_hash,user_id) VALUES(${hash(token)},${userID})`;
+    const response=await history(new Request('https://agent.test/api/journals',{headers:{authorization:`Bearer ${token}`}}));
+    expect(response.status).toBe(200);const result=await response.json();expect(result.journals).toHaveLength(1);expect(result.nextCursor).toBeNull();
+    expect(result.journals[0].evidence[0]).not.toHaveProperty('files');
+    expect(result.journals[0].repositories[0].isEnabled).toBe(true);
+  });
+  it('schedules server finalization once per local day without a phone',async()=>{
+    const sql=db();await sql`UPDATE users SET finalize_minute=0 WHERE id=${userID}`;
+    await scheduleDue();const first=await sql`SELECT requested_at FROM jobs WHERE user_id=${userID}`;
+    await scheduleDue();const second=await sql`SELECT requested_at FROM jobs WHERE user_id=${userID}`;
+    expect(first[0].requested_at).toEqual(second[0].requested_at);
+    expect((await sql`SELECT finalized_day::text FROM users WHERE id=${userID}`)[0].finalized_day).toBe(day.day);
+  });
+  it('preserves PostgreSQL microseconds when paging adjacent history revisions',async()=>{
+    const sql=db();
+    for (let i=1;i<=6;i++) {
+      await sql`INSERT INTO journals(user_id,day,time_zone,evidence_hash,prompt_version,generated_at,updated_at)
+        VALUES(${userID},${`2026-09-0${i}`},${day.timeZone},'hash','journal-synthesis-1',now(),
+          '2026-09-06T16:00:00.123456Z'::timestamptz+${i}*interval '1 microsecond')`;
+    }
+    await sql`INSERT INTO sessions(token_hash,user_id) VALUES(${hash(token)},${userID})`;
+    const fetchPage=(query:string)=>history(new Request(`https://agent.test/api/journals${query}`,{headers:{authorization:`Bearer ${token}`}}));
+    const first=await (await fetchPage('')).json();expect(first.journals).toHaveLength(5);
+    const second=await (await fetchPage(`?cursor=${encodeURIComponent(first.nextCursor)}`)).json();expect(second.journals).toHaveLength(1);expect(second.nextCursor).toBeNull();
+    const ids=[...first.journals,...second.journals].map(journal=>journal.generation.id);expect(new Set(ids).size).toBe(6);
+  });
+  it('queues a fresh narrative after a saved edit while preserving the edited entry',async()=>{
+    await runJob(await enqueue(userID,day),service);
+    const journal=await readJournal(userID,day);const id=journal.entries[0].id;
+    await applyEdits(userID,[{mutationID:randomUUID(),targetID:id,targetType:'entry',deleted:false,title:'My exact words',detail:'A correction',kind:'fix',occurredAt:evidence.occurredAt}]);
+    const jobs=await enqueueEditedJournals(userID,[id]);expect(jobs).toHaveLength(1);
+    expect((await readJournal(userID,day)).status).toBe('pending');
+    await runJob(jobs[0],service);expect((await readJournal(userID,day)).entries[0].title).toBe('My exact words');
   });
 });

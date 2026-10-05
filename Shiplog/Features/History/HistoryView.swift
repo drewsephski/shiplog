@@ -120,12 +120,18 @@ struct JournalDayView: View {
                     .frame(minHeight: 44)
                 Divider()
                 HStack {
-                    Eyebrow(text: "Daily reflection")
+                    Eyebrow(
+                        text: summaries.first?.originRawValue == SummaryOrigin.generatedDraft.rawValue
+                            ? "Daily story" : "Daily reflection")
                     Spacer()
                     Button(summaries.isEmpty ? "Add" : "Edit") { sheet = .reflection }.frame(minHeight: 44)
                 }
                 if let reflection = summaries.first {
                     Text(reflection.text).textSelection(.enabled)
+                    if reflection.originRawValue == SummaryOrigin.generatedDraft.rawValue {
+                        Label("AI draft · Based on your source activity", systemImage: "pencil").font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 } else {
                     Text("Leave a thought for your future self.").foregroundStyle(.secondary)
                 }

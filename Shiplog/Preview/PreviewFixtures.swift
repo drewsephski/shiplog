@@ -56,7 +56,8 @@
 
     #Preview("Today · sample journal") {
         if let container = try? PreviewFixtures.container() {
-            NavigationStack { TodayView() }.modelContainer(container).environment(GitHubConnection()).preferredColorScheme(.dark)
+            NavigationStack { TodayView() }.modelContainer(container).environment(GitHubConnection())
+                .preferredColorScheme(.dark)
         }
     }
 

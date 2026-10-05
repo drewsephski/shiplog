@@ -7,7 +7,7 @@ export function required(name: string): string {
   return value;
 }
 export class PublicError extends Error {
-  constructor(public status: number, public code: string, message: string) { super(message); }
+  constructor(public status: number, public code: string, message: string, public retryAfterSeconds = 300) { super(message); }
 }
 export const randomToken = () => randomBytes(32).toString('base64url');
 export function equal(a: string, b: string) {

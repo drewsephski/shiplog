@@ -23,6 +23,15 @@ export function localMinute(timeZone: string, now = new Date()): number {
   const time = Temporal.Instant.from(now.toISOString()).toZonedDateTimeISO(timeZone);
   return time.hour * 60 + time.minute;
 }
+export function reconciliationDays(since: Date, timeZone: string, now = new Date()): string[] {
+  const today=Temporal.PlainDate.from(localDay(timeZone,now));
+  const oldest=today.subtract({days:6});
+  let cursor=Temporal.PlainDate.from(localDay(timeZone,since));
+  if (Temporal.PlainDate.compare(cursor,oldest)<0) cursor=oldest;
+  const days:string[]=[];
+  while (Temporal.PlainDate.compare(cursor,today)<=0) { days.push(cursor.toString());cursor=cursor.add({days:1}); }
+  return days;
+}
 export const hash = (value: string) => createHash('sha256').update(value).digest('hex');
 export function evidenceID(repositoryID: string, kind: string, externalID: string) {
   return ['github', repositoryID, kind, externalID].map(encodeURIComponent).join(':');
@@ -32,6 +41,7 @@ export const evidenceSchema = z.object({
   kind: z.enum(['commit', 'pullRequest', 'issue']), title: z.string().max(1000),
   body: z.string().max(4000), occurredAt: z.iso.datetime({offset:true}),
   url: z.url().startsWith('https://github.com/'), actorID: z.string(),
+  attribution: z.enum(['author','committer','actor']).optional(),
   files: z.array(z.object({path:z.string(), additions:z.number(), deletions:z.number(), patch:z.string().max(2000)})).max(30),
 });
 export type ActivityEvidence = z.infer<typeof evidenceSchema>;

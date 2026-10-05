@@ -33,10 +33,19 @@ export function normalizeWebhook(event: string, payload: WebhookPayload): Activi
   const externalID = action==='opened' ? `${subject.id}:opened` : `${subject.id}:${action}:${occurredAt}`;
   return {id:evidenceID(String(payload.repository.id),kind,externalID),repositoryID:String(payload.repository.id),externalID,kind,
     title:`${action==='opened' ? 'Opened' : action==='merged' ? 'Merged' : action==='closed' ? 'Closed' : 'Reopened'} ${kind==='issue' ? 'issue' : 'PR'} #${subject.number}: ${subject.title}`.slice(0,1000),
-    body:(subject.body ?? '').slice(0,4000),url:subject.html_url,occurredAt,actorID:String(actorID),files:[]};
+    body:(subject.body ?? '').slice(0,4000),url:subject.html_url,occurredAt,actorID:String(actorID),attribution:'actor',files:[]};
 }
 export async function receiveWebhook(id: string, event: string, raw: unknown) {
   const payload = payloadSchema.parse(raw); const sql = db();
+  if (event==='github_app_authorization' && payload.action==='revoked' && payload.sender) {
+    await sql.transaction([
+      sql`UPDATE users SET disconnected_at=now(),access_token='',refresh_token=NULL WHERE github_id=${String(payload.sender.id)}`,
+      sql`DELETE FROM sessions WHERE user_id IN(SELECT id FROM users WHERE github_id=${String(payload.sender.id)})`,
+      sql`UPDATE repositories SET enabled=false WHERE user_id IN(SELECT id FROM users WHERE github_id=${String(payload.sender.id)})`,
+      sql`DELETE FROM jobs WHERE user_id IN(SELECT id FROM users WHERE github_id=${String(payload.sender.id)})`,
+    ]);
+    return;
+  }
   if (event==='installation' && ['deleted','suspend'].includes(payload.action ?? '')) {
     await sql`UPDATE repositories SET enabled=false WHERE installation_id=${String(payload.installation?.id)}`;
     return;

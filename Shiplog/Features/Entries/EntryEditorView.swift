@@ -78,7 +78,11 @@ struct EntryEditorView: View {
                     }
                     DatePicker("Shipped", selection: $date, in: ...Date.now)
                 } footer: {
-                    Text(existing?.remoteID == nil ? "Recorded by you. You can edit this entry at any time." : "Your edits are preserved on later generations. The repository stays linked to its evidence.")
+                    Text(
+                        existing?.remoteID == nil
+                            ? "Recorded by you. You can edit this entry at any time."
+                            : "Your edits are preserved on later generations. The repository stays linked to its evidence."
+                    )
                 }
             }
             .navigationTitle(existing == nil ? "Log a build" : "Edit build")

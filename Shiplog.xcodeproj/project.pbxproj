@@ -23,6 +23,7 @@
 		643A72FB9AA2CE41187BCDE6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 476C47F37604B9CFFDB58C50 /* Assets.xcassets */; };
 		708E380E3A8CA4AEEC90C4A1 /* ProjectDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE58ECB4CB6CAC22BB411756 /* ProjectDetailView.swift */; };
 		77751BFB83A1D4E8DFD3C9AC /* JournalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 593E44AAE24C49DE6FB5AE97 /* JournalStore.swift */; };
+		7891F51C6AF1F0EA834C8603 /* AutonomousJournalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F884BAE7BA02768A3DA7DF9E /* AutonomousJournalTests.swift */; };
 		7E0DBF12F27EFCDA4388DCF8 /* ReflectionEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 036368E3A2004F596E69C18B /* ReflectionEditorView.swift */; };
 		83530AD5E164589F6F8E2C80 /* ShiplogApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 296C86AF1ADC47C761E0C0F6 /* ShiplogApp.swift */; };
 		8D111677440B1074E5437D49 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D95129FEFD2E0D8B99886D /* OnboardingView.swift */; };
@@ -96,6 +97,7 @@
 		E115F96CABB34320819A4B7B /* SchemaV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaV2.swift; sourceTree = "<group>"; };
 		E9D95129FEFD2E0D8B99886D /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		EAE74A831516AAB97C937FCA /* GitHubConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubConnection.swift; sourceTree = "<group>"; };
+		F884BAE7BA02768A3DA7DF9E /* AutonomousJournalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutonomousJournalTests.swift; sourceTree = "<group>"; };
 		F8DDF3DC72A08051CB2A6892 /* GitHubConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubConnectionView.swift; sourceTree = "<group>"; };
 		FF5D6105ACF80A7EC54DC8AB /* JournalSyncStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalSyncStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -253,6 +255,7 @@
 		B867C3C18F61CC3742BD5391 /* ShiplogTests */ = {
 			isa = PBXGroup;
 			children = (
+				F884BAE7BA02768A3DA7DF9E /* AutonomousJournalTests.swift */,
 				3E2445D3F7B8DEC4A9159455 /* JournalLogicTests.swift */,
 				A6A58A199D04937FD07D2222 /* PersistenceTests.swift */,
 			);
@@ -459,6 +462,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7891F51C6AF1F0EA834C8603 /* AutonomousJournalTests.swift in Sources */,
 				50DE9ACB3F34785F03855604 /* JournalLogicTests.swift in Sources */,
 				40DE3ACEBFD8E5FF87373656 /* PersistenceTests.swift in Sources */,
 			);
@@ -588,7 +592,6 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Shiplog;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_ShiplogAgentURL = "$(SHIPLOG_AGENT_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -664,7 +667,6 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Shiplog;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_ShiplogAgentURL = "$(SHIPLOG_AGENT_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;

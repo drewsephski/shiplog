@@ -4,7 +4,10 @@ import SwiftData
 enum ShiplogSchemaV2: VersionedSchema {
     static var versionIdentifier: Schema.Version { .init(2, 0, 0) }
     static var models: [any PersistentModel.Type] {
-        [Project.self, BuildEntry.self, SourceActivity.self, JournalSummary.self, ConnectedRepository.self, SyncCheckpoint.self, GenerationRun.self, JournalMutation.self]
+        [
+            Project.self, BuildEntry.self, SourceActivity.self, JournalSummary.self, ConnectedRepository.self,
+            SyncCheckpoint.self, GenerationRun.self, JournalMutation.self,
+        ]
     }
 
     @Model final class Project {
@@ -84,7 +87,8 @@ enum ShiplogSchemaV2: VersionedSchema {
             provider: String, repositoryID: String, externalID: String, kind: String, title: String,
             url: String? = nil, occurredAt: Date, entry: BuildEntry? = nil
         ) {
-            self.identity = EvidenceIdentity.make(provider: provider, repositoryID: repositoryID, kind: kind, externalID: externalID)
+            self.identity = EvidenceIdentity.make(
+                provider: provider, repositoryID: repositoryID, kind: kind, externalID: externalID)
             self.repositoryID = repositoryID
             self.provider = provider
             self.externalID = externalID
@@ -135,7 +139,10 @@ enum ShiplogSchemaV2: VersionedSchema {
         var isPrivate: Bool
         var isEnabled: Bool
         var project: Project?
-        init(ownerID: String, repositoryID: String, installationID: String, fullName: String, url: String, isPrivate: Bool, project: Project) {
+        init(
+            ownerID: String, repositoryID: String, installationID: String, fullName: String, url: String,
+            isPrivate: Bool, project: Project
+        ) {
             self.key = "\(ownerID):\(repositoryID)"
             self.ownerID = ownerID
             self.repositoryID = repositoryID
@@ -165,7 +172,10 @@ enum ShiplogSchemaV2: VersionedSchema {
         var evidenceHash: String
         var promptVersion: String
         var generatedAt: Date
-        init(id: UUID, ownerID: String, localDay: String, timeZone: String, evidenceHash: String, promptVersion: String, generatedAt: Date) {
+        init(
+            id: UUID, ownerID: String, localDay: String, timeZone: String, evidenceHash: String, promptVersion: String,
+            generatedAt: Date
+        ) {
             self.id = id
             self.ownerID = ownerID
             self.localDay = localDay
@@ -194,8 +204,6 @@ enum ShiplogSchemaV2: VersionedSchema {
     }
 }
 
-
-
 typealias Project = ShiplogSchemaV2.Project
 typealias BuildEntry = ShiplogSchemaV2.BuildEntry
 typealias SourceActivity = ShiplogSchemaV2.SourceActivity
@@ -208,13 +216,19 @@ typealias JournalMutation = ShiplogSchemaV2.JournalMutation
 enum ShiplogMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] { [ShiplogSchemaV1.self, ShiplogSchemaV2.self] }
     static var stages: [MigrationStage] {
-        [.custom(fromVersion: ShiplogSchemaV1.self, toVersion: ShiplogSchemaV2.self, willMigrate: nil, didMigrate: { context in
-            let sources = try context.fetch(FetchDescriptor<ShiplogSchemaV2.SourceActivity>())
-            for source in sources {
-                source.repositoryID = source.entry?.project?.repositoryURL ?? "legacy"
-                source.identity = EvidenceIdentity.make(provider: source.provider, repositoryID: source.repositoryID, kind: source.kind, externalID: source.externalID)
-            }
-            try context.save()
-        })]
+        [
+            .custom(
+                fromVersion: ShiplogSchemaV1.self, toVersion: ShiplogSchemaV2.self, willMigrate: nil,
+                didMigrate: { context in
+                    let sources = try context.fetch(FetchDescriptor<ShiplogSchemaV2.SourceActivity>())
+                    for source in sources {
+                        source.repositoryID = source.entry?.project?.repositoryURL ?? "legacy"
+                        source.identity = EvidenceIdentity.make(
+                            provider: source.provider, repositoryID: source.repositoryID, kind: source.kind,
+                            externalID: source.externalID)
+                    }
+                    try context.save()
+                })
+        ]
     }
 }

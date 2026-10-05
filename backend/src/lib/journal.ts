@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { db } from './db';
 import { dayInterval, PROMPT_VERSION, type DayRequest, type ActivityEvidence, type ConnectedRepository, type RepoContext,
-  generationHash, type SynthesisInput, type SynthesisResult } from './domain';
+  generationHash, validateSynthesis, type SynthesisResult } from './domain';
 import { accessibleRepositories, userToken, installationToken, collectActivity, collectContext } from './github';
 import { PublicError } from './security';
-import { OpenRouterJournalSynthesisService, type JournalSynthesisService } from './synthesis';
+import { boundedSynthesisInput, OpenRouterJournalSynthesisService, type JournalSynthesisService } from './synthesis';
 
 export interface SavedEntry {
   id:string; repositoryID:string; title:string; detail:string; kind:string; confidence:number;
@@ -75,13 +75,13 @@ export async function generate(userID: string, input: DayRequest, lease: {jobID:
   const existing = (await sql`SELECT * FROM entries WHERE journal_id=${journal.id} AND (retired=false OR user_edited=true OR user_deleted=true) ORDER BY id`).map(saved);
   // Deletes suppress their original evidence on every later generation. Edits reserve their evidence.
   const deletedEvidence = new Set(existing.filter(entry=>entry.userDeleted).flatMap(entry=>entry.evidenceIDs));
-  const synthesisInput: SynthesisInput = {day:input.day,contexts,evidence:evidence.filter(item=>!deletedEvidence.has(item.id)),
-    existing:existing.filter(entry=>!entry.userDeleted).map(entry=>({id:entry.id,title:entry.title,detail:entry.detail,evidenceIDs:entry.evidenceIDs,userEdited:entry.userEdited}))};
+  const synthesisInput = boundedSynthesisInput({day:input.day,contexts,evidence:evidence.filter(item=>!deletedEvidence.has(item.id)),
+    existing:existing.filter(entry=>!entry.userDeleted).map(entry=>({id:entry.id,title:entry.title,detail:entry.detail,evidenceIDs:entry.evidenceIDs,userEdited:entry.userEdited}))}, user.include_patches);
   const evidenceHash = generationHash(synthesisInput);
   if (journal.evidence_hash===evidenceHash && journal.prompt_version===PROMPT_VERSION) return;
   const [run] = await sql`INSERT INTO generation_runs(journal_id,evidence_hash,prompt_version) VALUES(${journal.id},${evidenceHash},${PROMPT_VERSION})
     ON CONFLICT(journal_id,evidence_hash,prompt_version) DO UPDATE SET started_at=now() RETURNING id`;
-  const output = synthesisInput.evidence.length ? await service.synthesize(synthesisInput) : {entries:[],narrative:{text:'',evidenceIDs:[]}};
+  const output = synthesisInput.evidence.length ? validateSynthesis(await service.synthesize(synthesisInput),synthesisInput) : {entries:[],narrative:{text:'',evidenceIDs:[]}};
   const matches = matchEntries(output.entries,existing);
   // A lease token fences results from interrupted workers. Manual edits are protected at commit time too.
   await sql.transaction([
@@ -97,7 +97,7 @@ export async function generate(userID: string, input: DayRequest, lease: {jobID:
         ON CONFLICT(id) DO UPDATE SET title=EXCLUDED.title,detail=EXCLUDED.detail,kind=EXCLUDED.kind,confidence=EXCLUDED.confidence,
           evidence_ids=EXCLUDED.evidence_ids,occurred_at=EXCLUDED.occurred_at,retired=false WHERE entries.user_edited=false AND entries.user_deleted=false`;
     }),
-    sql`UPDATE journals SET evidence_hash=${evidenceHash},prompt_version=${PROMPT_VERSION},generated_at=now(),
+    sql`UPDATE journals SET evidence_hash=${evidenceHash},prompt_version=${PROMPT_VERSION},generated_at=clock_timestamp(),updated_at=clock_timestamp(),
       narrative=CASE WHEN narrative_edited OR narrative_deleted THEN narrative ELSE ${output.narrative.text} END,
       narrative_evidence_ids=CASE WHEN narrative_edited OR narrative_deleted THEN narrative_evidence_ids ELSE ${JSON.stringify(output.narrative.evidenceIDs)}::jsonb END
       WHERE id=${journal.id} AND EXISTS(SELECT 1 FROM jobs WHERE id=${lease.jobID} AND lease_token=${lease.token} AND lease_until>now())
@@ -116,7 +116,10 @@ export async function readJournal(userID: string, input: DayRequest) {
   const sources = ids.length ? await sql`SELECT payload FROM evidence WHERE user_id=${userID} AND id=ANY(${ids}::text[]) ORDER BY id` : [];
   return {userID,day:input.day,timeZone:input.timeZone,status:job?.status ?? 'idle',errorCode:job?.error_code ?? null,
     repositories:repos.map(row=>({...row.descriptor as ConnectedRepository,isEnabled:row.enabled,checkpoint:row.checkpoint ? new Date(row.checkpoint).toISOString() : null})),
-    entries,evidence:sources.map(row=>row.payload as ActivityEvidence),
+    entries,evidence:sources.map(row=> {
+      const item=row.payload as ActivityEvidence;
+      return {id:item.id,repositoryID:item.repositoryID,externalID:item.externalID,kind:item.kind,title:item.title,occurredAt:item.occurredAt,url:item.url,actorID:item.actorID};
+    }),
     narrative:journal ? {id:journal.id,text:journal.narrative_deleted ? '' : journal.narrative,userEdited:journal.narrative_edited,
       evidenceIDs:journal.narrative_evidence_ids as string[]} : null,
     generation:journal?.generated_at ? {id:journal.id,evidenceHash:journal.evidence_hash,promptVersion:journal.prompt_version,

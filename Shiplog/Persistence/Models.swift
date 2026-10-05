@@ -114,4 +114,3 @@ enum ShiplogSchemaV1: VersionedSchema {
         }
     }
 }
-

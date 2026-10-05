@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { kindSchema } from './domain';
 import { db } from './db';
 import { PublicError } from './security';
+import { enqueue } from './journal';
 export const editSchema = z.object({
   mutationID:z.uuid(),targetID:z.uuid(),targetType:z.enum(['entry','narrative']),deleted:z.boolean(),
   title:z.string().min(1).max(240).optional(),detail:z.string().max(20000).optional(),kind:kindSchema.optional(),
@@ -35,5 +36,15 @@ export async function applyEdits(userID: string, input: z.infer<typeof editSchem
       ) UPDATE journals SET narrative_edited=true,narrative_deleted=${edit.deleted},
         narrative=COALESCE(${edit.detail ?? null},narrative) WHERE id=${edit.targetID} AND user_id=${userID}
         AND EXISTS(SELECT 1 FROM mutation)`));
+  const targets=input.map(edit=>edit.targetID);
+  await sql`UPDATE journals SET updated_at=clock_timestamp() WHERE user_id=${userID}
+    AND (id=ANY(${targets}::uuid[]) OR id IN(SELECT journal_id FROM entries WHERE id=ANY(${targets}::uuid[])))`;
   return input.map(edit=>edit.mutationID);
+}
+export async function enqueueEditedJournals(userID: string, targetIDs: string[]) {
+  const sql=db();
+  const journals=await sql`SELECT DISTINCT j.id,j.day::text AS local_day,j.time_zone FROM journals j
+    LEFT JOIN entries e ON e.journal_id=j.id WHERE j.user_id=${userID}
+    AND (j.id=ANY(${targetIDs}::uuid[]) OR e.id=ANY(${targetIDs}::uuid[]))`;
+  return Promise.all(journals.map(journal=>enqueue(userID,{day:journal.local_day,timeZone:journal.time_zone})));
 }

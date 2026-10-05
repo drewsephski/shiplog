@@ -2,7 +2,7 @@
 
 The folded S identity is shared by the app icon, Today, onboarding and Settings. Source artwork, scalable logo exports and regeneration instructions live in [brand/README.md](brand/README.md).
 
-A native iPhone journal for the things you build. Swift 6, SwiftUI, SwiftData. iOS 18 or later. No third-party runtime dependencies, account requirement, network traffic, or production sample data.
+A GitHub-first journal for the things you build. Swift 6, SwiftUI, SwiftData; iOS 18 or later. A Next.js/Neon agent imports attributed GitHub activity and writes evidence-backed AI drafts. Manual journaling remains available offline. No production sample data or analytics.
 
 ## Run
 
@@ -12,9 +12,11 @@ Open `Shiplog.xcodeproj`, select the **Shiplog** scheme and an iPhone simulator,
 xcodegen generate
 ```
 
-New installations start with a brief onboarding and an empty journal. Create a project, log a build, and write a daily reflection. Review days in History, a project's evolution in Projects, and calendar-aware shipping statistics in Insights. Entries and projects can be edited; projects can be archived/restored. Destructive actions require confirmation.
+New installations lead with **Connect GitHub**. Authorize the GitHub App, choose repositories, and consent to the bounded data transfer. Shiplog scans the current local day, matches/creates projects, and presents generated build entries and a daily story with exact evidence links and confidence. Manual entry is secondary. Edits and deletions survive later generation. Review server-written days in History, and project evolution in Projects; the existing Insights surface is preserved. Destructive actions require confirmation.
 
-Settings explains the future GitHub connection, documents privacy, and exports the entire local journal as versioned JSON. Export is a portable record, not a restore feature. SwiftData storage is local with normal iOS backup behavior; there is no CloudKit synchronization.
+Settings manages GitHub repository selection, local evening generation time, disconnect/server deletion, privacy, and versioned JSON export. SwiftData is the local cache, not the agent scheduler. Manual entries stay local; edits to generated text synchronize through a persistent outbox. Export is a portable record, not a restore feature. There is no CloudKit synchronization.
+
+See [agent setup and live acceptance](backend/README.md). The default `SHIPLOG_AGENT_URL` build setting is empty: configure a deployed HTTPS agent before testing a live connection. Missing configuration is explained in the app; it never produces fictional GitHub activity.
 
 ## Preview and sample data
 
@@ -32,7 +34,7 @@ xcrun swift-format format --in-place --recursive Shiplog ShiplogTests ShiplogUIT
 SHIPLOG_SIMULATOR_ID=<available-iphone-udid> ./scripts/check.sh
 ```
 
-Domain tests cover distinct shipping days, streak grace, DST, year/week boundaries, time zones, future entries, archived projects, stable timeline ordering, and input validation. Persistence tests cover CRUD, disk reopening, cascade deletion, reflection upsert/removal, JSON export, and sample-store isolation. Native UI tests cover onboarding, the first project/build/reflection, navigation, repository validation, archive/restore/delete, export preparation, and connection disclosure.
+Domain tests cover distinct shipping days, streak grace, DST, year/week boundaries, time zones, future entries, archived projects, stable timeline ordering, and input validation. Persistence tests cover CRUD, disk reopening, cascade deletion, reflection upsert/removal, V1-to-V2 disk migration, generation idempotence, exact provenance, protected edits/deletions, JSON export, and sample-store isolation. Native UI tests cover onboarding, the first project/build/reflection, navigation, repository validation, archive/restore/delete, export preparation, and connection disclosure.
 
 The same domain and SwiftData persistence sources also form a small Swift package for simulator-independent macOS checks:
 
@@ -48,10 +50,11 @@ UI tests require a bootable simulator runtime and disable parallel execution. Th
 
 - `App`: store bootstrap, recoverable failure, onboarding state, independent tab navigation.
 - `Domain`: value records, validation, timeline grouping and deterministic statistics.
-- `Persistence`: frozen version 1 SwiftData schema, migration plan, explicit save/rollback operations.
-- `Services`: provider-neutral activity and summary contracts, versioned JSON export.
+- `Persistence`: frozen V1, migrated V2 cache schema, explicit save/rollback operations and offline outbox.
+- `Services`: provider-neutral activity/summary contracts, secure agent transport and versioned JSON export.
 - `Design`: semantic colors, typography, empty states and reusable entry rows.
 - `Features`: focused SwiftUI screens and draft editors with local state.
 - `Preview`: Debug-only, in-memory sample fixtures.
+- `backend`: GitHub App authentication, normalized evidence, synthesis, durable jobs, Neon schema and tests.
 
 See [architecture](docs/ARCHITECTURE.md), [release checklist](docs/RELEASE.md), and [verification](docs/VERIFICATION.md).

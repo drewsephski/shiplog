@@ -13,12 +13,22 @@ const repoSchema = z.object({
 const installationSchema = z.object({id:z.number().int(), app_id:z.number().int(), suspended_at:z.string().nullable(),
   permissions:z.record(z.string(),z.string())});
 export class GitHubError extends PublicError {
-  constructor(status: number) {
-    super(status === 429 ? 429 : 502, status === 401 || status === 403 || status === 404 ? 'github_access' : 'github_unavailable',
+  constructor(status: number, retryAfter = 300) {
+    super(status === 429 ? 429 : 502, status===429 ? 'github_rate_limited' : status === 401 || status === 403 || status === 404 ? 'github_access' : 'github_unavailable',
       status === 401 || status === 403 || status === 404
         ? 'GitHub access changed. Reconnect and check repository permissions.'
-        : 'GitHub is unavailable or rate limited. Shiplog will retry.');
+        : 'GitHub is unavailable or rate limited. Shiplog will retry.',retryAfter);
   }
+}
+async function githubFailure(response: Response): Promise<GitHubError> {
+  let message='';
+  try { const body=z.object({message:z.string()}).safeParse(await response.json());if(body.success) message=body.data.message; } catch {}
+  const limited=response.status===429 || response.status===403 &&
+    (response.headers.get('x-ratelimit-remaining')==='0' || response.headers.has('retry-after') || /rate limit/i.test(message));
+  const reset=Number(response.headers.get('x-ratelimit-reset'))*1000;
+  const retry=Number(response.headers.get('retry-after'));
+  const delay=Math.min(86_400,Math.max(60,retry || 0,Number.isFinite(reset) ? Math.ceil((reset-Date.now())/1000) : 0));
+  return new GitHubError(limited ? 429 : response.status,limited ? delay : 300);
 }
 export async function github<T>(path: string, token: string, schema: z.ZodType<T>, init: RequestInit = {}): Promise<T> {
   if (!path.startsWith('/') || path.startsWith('//')) throw new Error('Invalid GitHub path');
@@ -27,7 +37,7 @@ export async function github<T>(path: string, token: string, schema: z.ZodType<T
     headers:{accept:'application/vnd.github+json','X-GitHub-Api-Version':'2026-03-10',
       authorization:`Bearer ${token}`,'User-Agent':'Shiplog-Agent','Content-Type':'application/json'},
   });
-  if (!response.ok) throw new GitHubError(response.status);
+  if (!response.ok) throw await githubFailure(response);
   return schema.parse(await response.json());
 }
 export async function pages<T>(path: string, token: string, schema: z.ZodType<T>, key?: string): Promise<T[]> {
@@ -90,7 +100,10 @@ export async function userToken(userID: string): Promise<string> {
       body:JSON.stringify({client_id:required('GITHUB_CLIENT_ID'),client_secret:required('GITHUB_CLIENT_SECRET'),
         grant_type:'refresh_token',refresh_token:decrypt(user.refresh_token)}),
     });
-    const value = oauthSchema.parse(await response.json());
+    if (!response.ok) throw await githubFailure(response);
+    const parsed = oauthSchema.safeParse(await response.json());
+    if (!parsed.success) throw new PublicError(401,'github_access','GitHub authorization expired. Reconnect to continue.');
+    const value = parsed.data;
     await sql`UPDATE users SET access_token=${encrypt(value.access_token)},
       refresh_token=${value.refresh_token ? encrypt(value.refresh_token) : user.refresh_token},
       token_expires_at=${value.expires_in ? new Date(Date.now()+value.expires_in*1000).toISOString() : null},
@@ -104,7 +117,7 @@ const commitSchema = z.object({sha:z.string(),html_url:z.url(),author:authorSche
 const fileSchema = z.object({filename:z.string(),additions:z.number(),deletions:z.number(),patch:z.string().optional()});
 const issueSchema = z.object({id:z.number(),number:z.number(),title:z.string(),body:z.string().nullable(),html_url:z.url(),
   user:githubUser,created_at:z.string(),updated_at:z.string(),pull_request:z.unknown().optional()});
-const eventSchema = z.object({id:z.number().optional(),event:z.string(),actor:authorSchema,created_at:z.string().optional()}).passthrough();
+const eventSchema = z.object({id:z.number().nullable().optional(),event:z.string(),actor:authorSchema.optional(),created_at:z.string().nullable().optional()}).passthrough();
 export function isUserCommit(commit: z.infer<typeof commitSchema>, userID: string) {
   // Both author and committer attribution are explicit IDs, never a display name or arbitrary email.
   return String(commit.author?.id)===userID || String(commit.committer?.id)===userID;
@@ -116,7 +129,7 @@ export function safeFile(path: string) {
 export async function collectActivity(repo: ConnectedRepository, token: string, userID: string,
   interval: {start:string;end:string}, includePatches: boolean): Promise<ActivityEvidence[]> {
   const base = `/repos/${repo.fullName.split('/').map(encodeURIComponent).join('/')}`;
-  const within = (date: string) => date>=interval.start && new Date(date)<new Date(interval.end);
+  const within = (date: string) => Date.parse(date)>=Date.parse(interval.start) && Date.parse(date)<Date.parse(interval.end);
   const result = new Map<string,ActivityEvidence>();
   const branches = await pages(`${base}/branches`,token,z.object({name:z.string()}));
   if (branches.length>20) throw new PublicError(422,'branch_limit','Choose repositories with at most 20 branches for this release.');
@@ -131,7 +144,7 @@ export async function collectActivity(repo: ConnectedRepository, token: string, 
       const details = await github(`${base}/commits/${commit.sha}`,token,z.object({files:z.array(fileSchema).optional()}));
       result.set(id,{id,repositoryID:repo.id,externalID:commit.sha,kind:'commit',title:commit.commit.message.split('\n')[0].slice(0,1000),
         body:commit.commit.message.slice(0,4000),occurredAt:new Date(commit.commit.committer.date).toISOString(),
-        url:commit.html_url,actorID:userID,files:(details.files ?? []).filter(file=>safeFile(file.filename)).slice(0,30).map(file=>({
+        url:commit.html_url,actorID:userID,attribution:String(commit.author?.id)===userID ? 'author' : 'committer',files:(details.files ?? []).filter(file=>safeFile(file.filename)).slice(0,30).map(file=>({
           path:file.filename,additions:file.additions,deletions:file.deletions,patch:includePatches ? (file.patch ?? '').slice(0,2000) : '',
         }))});
     }
@@ -158,7 +171,7 @@ export async function collectActivity(repo: ConnectedRepository, token: string, 
     for (const change of changes) {
       const id = evidenceID(repo.id,kind,change.id);
       result.set(id,{id,repositoryID:repo.id,externalID:change.id,kind,title:change.title.slice(0,1000),body:(issue.body ?? '').slice(0,4000),
-        occurredAt:new Date(change.date).toISOString(),url:issue.html_url,actorID:userID,files});
+        occurredAt:new Date(change.date).toISOString(),url:issue.html_url,actorID:userID,attribution:'actor',files});
     }
   }
   if (result.size>200) throw new PublicError(422,'activity_limit','Too much activity for one generation. Choose fewer repositories.');
@@ -176,7 +189,7 @@ export async function collectContext(repo: ConnectedRepository, token: string): 
     const response = await fetch(`https://api.github.com${base}/contents/${path}`,{cache:'no-store',redirect:'error',signal:AbortSignal.timeout(10_000),
       headers:{accept:'application/vnd.github+json',authorization:`Bearer ${token}`,'X-GitHub-Api-Version':'2026-03-10','User-Agent':'Shiplog-Agent'}});
     if (response.status===404) continue;
-    if (!response.ok) throw new GitHubError(response.status);
+    if (!response.ok) throw await githubFailure(response);
     const file = z.object({content:z.string(),encoding:z.literal('base64'),size:z.number()}).parse(await response.json());
     if (file.size>64_000) continue;
     documents.push({path,text:Buffer.from(file.content,'base64').toString('utf8').slice(0,4000)});
@@ -193,6 +206,7 @@ export async function collectCommit(repo: ConnectedRepository, token: string, sh
   return {id:evidenceID(repo.id,'commit',commit.sha),repositoryID:repo.id,externalID:commit.sha,kind:'commit',
     title:commit.commit.message.split('\n')[0].slice(0,1000),body:commit.commit.message.slice(0,4000),
     occurredAt:new Date(commit.commit.committer.date).toISOString(),url:commit.html_url,actorID:userID,
+    attribution:String(commit.author?.id)===userID ? 'author' : 'committer',
     files:(commit.files ?? []).filter(file=>safeFile(file.filename)).slice(0,30).map(file=>({path:file.filename,
       additions:file.additions,deletions:file.deletions,patch:includePatches ? (file.patch ?? '').slice(0,2000) : ''}))};
 }

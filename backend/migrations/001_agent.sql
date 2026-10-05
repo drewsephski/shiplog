@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS journals (
   day date NOT NULL, time_zone text NOT NULL, evidence_hash text, prompt_version text,
   narrative text NOT NULL DEFAULT '', narrative_evidence_ids jsonb NOT NULL DEFAULT '[]',
   narrative_edited boolean NOT NULL DEFAULT false, narrative_deleted boolean NOT NULL DEFAULT false,
-  generated_at timestamptz, UNIQUE(user_id,day,time_zone)
+  generated_at timestamptz, updated_at timestamptz NOT NULL DEFAULT clock_timestamp(), UNIQUE(user_id,day,time_zone)
 );
 CREATE TABLE IF NOT EXISTS entries (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(), journal_id uuid NOT NULL REFERENCES journals(id) ON DELETE CASCADE,
