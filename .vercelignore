@@ -1,0 +1,16 @@
+.build
+DerivedData
+.env*
+**/.env*
+**/node_modules
+**/.next
+**/coverage
+**/*.tsbuildinfo
+**/__pycache__
+Shiplog
+ShiplogTests
+ShiplogUITests
+Shiplog.xcodeproj
+docs
+brand
+scripts

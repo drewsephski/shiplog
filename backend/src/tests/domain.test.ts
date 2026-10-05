@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { dayInterval, evidenceID, generationHash, validateSynthesis, reconciliationDays, type ActivityEvidence, type SynthesisInput } from '../lib/domain';
 import { matchEntries } from '../lib/journal';
 import { createHmac } from 'node:crypto';
-import { challenge, encrypt, decrypt, verifyWebhook } from '../lib/security';
+import { challenge, encrypt, decrypt, verifyWebhook, assertSameOrigin } from '../lib/security';
 import { normalizeWebhook } from '../lib/webhooks';
 import { safeFile, isUserCommit, github, collectActivity } from '../lib/github';
 
@@ -61,6 +61,19 @@ describe('synthesis provenance',()=>{
   });
 });
 describe('security and attribution',()=>{
+  it('requires an exact origin for repository consent and rejects opaque or foreign origins',()=>{
+    vi.stubEnv('SHIPLOG_PUBLIC_URL','https://shiplog.example');
+    try {
+      expect(()=>assertSameOrigin(new Request('https://shiplog.example/connect/repositories',{
+        method:'POST',headers:{origin:'https://shiplog.example'},
+      }))).not.toThrow();
+      for (const origin of ['null','https://attacker.example','https://shiplog.example.attacker.example','']) {
+        expect(()=>assertSameOrigin(new Request('https://shiplog.example/connect/repositories',{
+          method:'POST',headers:{origin},
+        }))).toThrow('Please restart the connection.');
+      }
+    } finally { vi.unstubAllEnvs(); }
+  });
   it('checks exact raw signed bytes',()=>{
     const raw='{"event":1}';const signature=`sha256=${createHmac('sha256','test-only-secret').update(raw).digest('hex')}`;
     expect(verifyWebhook(raw,signature,'test-only-secret')).toBe(true);
