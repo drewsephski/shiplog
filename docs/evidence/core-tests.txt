@@ -1,0 +1,58 @@
+Building for debugging...
+[0/3] Write sources
+[1/3] Write swift-version--58304C5D6DBC2206.txt
+[3/5] Emitting module ShiplogTests
+[4/5] Compiling ShiplogTests PersistenceTests.swift
+[4/6] Write Objects.LinkFileList
+[5/6] Linking ShiplogCorePackageTests
+Build complete! (6.11s)
+Test Suite 'All tests' started at 2026-10-05 10:11:50.847.
+Test Suite 'ShiplogCorePackageTests.xctest' started at 2026-10-05 10:11:50.864.
+Test Suite 'JournalLogicTests' started at 2026-10-05 10:11:50.864.
+Test Case '-[ShiplogTests.JournalLogicTests testEmptyJournalHasNoInventedStatistics]' started.
+Test Case '-[ShiplogTests.JournalLogicTests testEmptyJournalHasNoInventedStatistics]' passed (0.008 seconds).
+Test Case '-[ShiplogTests.JournalLogicTests testFutureEntriesExcludedAndArchivedProjectsNotActive]' started.
+Test Case '-[ShiplogTests.JournalLogicTests testFutureEntriesExcludedAndArchivedProjectsNotActive]' passed (0.002 seconds).
+Test Case '-[ShiplogTests.JournalLogicTests testLengthLimits]' started.
+Test Case '-[ShiplogTests.JournalLogicTests testLengthLimits]' passed (0.002 seconds).
+Test Case '-[ShiplogTests.JournalLogicTests testLocalMidnightAndWeekBoundary]' started.
+Test Case '-[ShiplogTests.JournalLogicTests testLocalMidnightAndWeekBoundary]' passed (0.001 seconds).
+Test Case '-[ShiplogTests.JournalLogicTests testReflectionRetainsCivilDateAcrossTravelAndCalendarChanges]' started.
+Test Case '-[ShiplogTests.JournalLogicTests testReflectionRetainsCivilDateAcrossTravelAndCalendarChanges]' passed (0.003 seconds).
+Test Case '-[ShiplogTests.JournalLogicTests testSameInstantGroupsAccordingToUserTimeZone]' started.
+Test Case '-[ShiplogTests.JournalLogicTests testSameInstantGroupsAccordingToUserTimeZone]' passed (0.001 seconds).
+Test Case '-[ShiplogTests.JournalLogicTests testStreakAcrossSpringDSTAndYearBoundary]' started.
+Test Case '-[ShiplogTests.JournalLogicTests testStreakAcrossSpringDSTAndYearBoundary]' passed (0.001 seconds).
+Test Case '-[ShiplogTests.JournalLogicTests testStreakCountsDistinctDaysAndAllowsYesterday]' started.
+Test Case '-[ShiplogTests.JournalLogicTests testStreakCountsDistinctDaysAndAllowsYesterday]' passed (0.001 seconds).
+Test Case '-[ShiplogTests.JournalLogicTests testTimelineSortsNewestFirstAndStableTies]' started.
+Test Case '-[ShiplogTests.JournalLogicTests testTimelineSortsNewestFirstAndStableTies]' passed (0.001 seconds).
+Test Case '-[ShiplogTests.JournalLogicTests testValidationRejectsEmptyTitlesMissingProjectFutureAndUnsafeURL]' started.
+Test Case '-[ShiplogTests.JournalLogicTests testValidationRejectsEmptyTitlesMissingProjectFutureAndUnsafeURL]' passed (0.002 seconds).
+Test Suite 'JournalLogicTests' passed at 2026-10-05 10:11:50.887.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 0.020 (0.023) seconds
+Test Suite 'PersistenceTests' started at 2026-10-05 10:11:50.887.
+Test Case '-[ShiplogTests.PersistenceTests testDeletingProjectCascadesEntriesAndEvidenceButKeepsReflections]' started.
+Test Case '-[ShiplogTests.PersistenceTests testDeletingProjectCascadesEntriesAndEvidenceButKeepsReflections]' passed (0.155 seconds).
+Test Case '-[ShiplogTests.PersistenceTests testDiskPersistenceSurvivesContainerRecreation]' started.
+Test Case '-[ShiplogTests.PersistenceTests testDiskPersistenceSurvivesContainerRecreation]' passed (0.050 seconds).
+Test Case '-[ShiplogTests.PersistenceTests testEditingImportedWorkPreservesEvidenceInExport]' started.
+Test Case '-[ShiplogTests.PersistenceTests testEditingImportedWorkPreservesEvidenceInExport]' passed (0.022 seconds).
+Test Case '-[ShiplogTests.PersistenceTests testProductionContainerStartsEmptyAndPreviewContainerIsSeparate]' started.
+Test Case '-[ShiplogTests.PersistenceTests testProductionContainerStartsEmptyAndPreviewContainerIsSeparate]' passed (0.036 seconds).
+Test Case '-[ShiplogTests.PersistenceTests testProjectAndEntryCreationEditingAndExport]' started.
+Test Case '-[ShiplogTests.PersistenceTests testProjectAndEntryCreationEditingAndExport]' passed (0.048 seconds).
+Test Case '-[ShiplogTests.PersistenceTests testReflectionUpsertAndRemoval]' started.
+Test Case '-[ShiplogTests.PersistenceTests testReflectionUpsertAndRemoval]' passed (0.033 seconds).
+Test Case '-[ShiplogTests.PersistenceTests testValidationFailureDoesNotMutateExistingEntry]' started.
+Test Case '-[ShiplogTests.PersistenceTests testValidationFailureDoesNotMutateExistingEntry]' passed (0.044 seconds).
+Test Suite 'PersistenceTests' passed at 2026-10-05 10:11:51.277.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.388 (0.390) seconds
+Test Suite 'ShiplogCorePackageTests.xctest' passed at 2026-10-05 10:11:51.277.
+	 Executed 17 tests, with 0 failures (0 unexpected) in 0.408 (0.414) seconds
+Test Suite 'All tests' passed at 2026-10-05 10:11:51.277.
+	 Executed 17 tests, with 0 failures (0 unexpected) in 0.408 (0.431) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

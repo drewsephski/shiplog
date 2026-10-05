@@ -1,0 +1,56 @@
+name: Shiplog
+options:
+  bundleIdPrefix: com.drewsepeczi
+  deploymentTarget:
+    iOS: '18.0'
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: '6.0'
+    SWIFT_STRICT_CONCURRENCY: complete
+    IPHONEOS_DEPLOYMENT_TARGET: '18.0'
+    TARGETED_DEVICE_FAMILY: '1'
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: 2NHJGX6A7S
+    MARKETING_VERSION: '1.0.0'
+    CURRENT_PROJECT_VERSION: '1'
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    GENERATE_INFOPLIST_FILE: YES
+    INFOPLIST_KEY_CFBundleDisplayName: Shiplog
+    INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+    INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+    INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+    INFOPLIST_KEY_UILaunchScreen_Generation: YES
+    INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+    INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: UIInterfaceOrientationPortrait
+    ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    SWIFT_EMIT_LOC_STRINGS: YES
+targets:
+  Shiplog:
+    type: application
+    platform: iOS
+    sources: [Shiplog]
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: '1'
+        PRODUCT_BUNDLE_IDENTIFIER: com.drewsepeczi.shiplog
+  ShiplogTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [ShiplogTests]
+    dependencies:
+      - target: Shiplog
+  ShiplogUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [ShiplogUITests]
+    dependencies:
+      - target: Shiplog
+schemes:
+  Shiplog:
+    build:
+      targets:
+        Shiplog: all
+    test:
+      targets: [ShiplogTests, ShiplogUITests]
+      gatherCoverageData: true
