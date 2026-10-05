@@ -10,10 +10,12 @@ import UIKit
 @MainActor @Observable final class GitHubConnection: NSObject {
     private(set) var session: AgentSession?
     private(set) var isBusy = false
+    private(set) var isRefreshingInBackground = false
     private(set) var status = ""
     var errorMessage: String?
     private var browser: ASWebAuthenticationSession?
     private var operationID = UUID()
+    private var refreshPolicy = JournalRefreshPolicy()
     private let client: AgentClient?
 
     override init() {
@@ -65,6 +67,7 @@ import UIKit
             let connected = try await client.exchange(code: code, verifier: verifier)
             try SessionKeychain.write(connected)
             session = connected
+            refreshPolicy = JournalRefreshPolicy()
             status = "Analyzing today…"
             try await synchronize(context: context, session: connected, generate: true)
         } catch is CancellationError {
@@ -74,14 +77,35 @@ import UIKit
         } catch { errorMessage = error.localizedDescription }
     }
 
-    func refresh(context: ModelContext, generate: Bool = false) async {
+    func refreshIfNeeded(context: ModelContext) async {
+        guard refreshPolicy.shouldRefresh(day: AgentDay(), at: .now) else { return }
+        await refresh(context: context, inBackground: true)
+    }
+
+    func refresh(context: ModelContext, generate: Bool = false, inBackground: Bool = false) async {
         guard !isBusy, let session else { return }
+        refreshPolicy.recordAttempt(day: AgentDay(), at: .now)
         isBusy = true
-        errorMessage = nil
-        status = generate ? "Analyzing today…" : "Refreshing your journal…"
-        defer { isBusy = false }
-        do { try await synchronize(context: context, session: session, generate: generate) } catch is CancellationError
-        { status = "" } catch { errorMessage = error.localizedDescription }
+        isRefreshingInBackground = inBackground
+        if !inBackground {
+            errorMessage = nil
+            status = generate ? "Analyzing today…" : "Refreshing your journal…"
+        }
+        defer {
+            isBusy = false
+            isRefreshingInBackground = false
+        }
+        do {
+            try await synchronize(context: context, session: session, generate: generate)
+            errorMessage = nil
+        } catch is CancellationError {
+            if !inBackground { status = "" }
+        } catch let error as URLError where error.code == .cancelled {
+            if !inBackground { status = "" }
+        } catch {
+            refreshPolicy.recordResult(status: "failed", day: AgentDay(), at: .now)
+            errorMessage = error.localizedDescription
+        }
     }
 
     private func synchronize(context: ModelContext, session: AgentSession, generate: Bool) async throws {
@@ -142,6 +166,7 @@ import UIKit
             throw AgentError.invalidResponse
         }
         try JournalSyncStore.merge(journal, ownerID: session.userID, context: context)
+        refreshPolicy.recordResult(status: journal.status, day: day, at: .now)
         switch journal.status {
         case "running", "pending":
             status =
@@ -191,6 +216,7 @@ import UIKit
             operationID = UUID()
             try SessionKeychain.delete()
             self.session = nil
+            refreshPolicy = JournalRefreshPolicy()
             status = ""
             for repo in try context.fetch(FetchDescriptor<ConnectedRepository>()) where repo.ownerID == session.userID {
                 repo.isEnabled = false

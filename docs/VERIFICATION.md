@@ -1,5 +1,14 @@
 # Verification — October 5, 2026
 
+## Blog-style journal and refresh verification (October 5, 2026)
+
+- Loaded journals now refresh quietly with a five-minute cooldown; pending generation polls every 30 seconds. Scene activation has one cancellable refresh task, and failed attempts also receive a cooldown. Day/time-zone changes refresh immediately.
+- Today and individual History days share a full article: opening daily story, chronological work sections, complete paragraphs, source navigation, and editing. Generated text remains labeled as an AI draft; user edits remain protected.
+- Prompt version `journal-synthesis-4` groups related evidence into blog sections. Its provider schema requires every unprotected source to be assigned exactly once; invalid drafts receive one revision and are never published without validation. The public Swift journal contract is unchanged. Real model trials covered all 12 current sources in four sections; production writing is configured as `openai/gpt-4.1`.
+- **37 backend tests passed**, including ten isolated PostgreSQL integration tests, plus lint and strict TypeScript. **27 native tests and five UI journeys passed** on iOS 26.5, including full paragraphs and source navigation in Today/History. Swift formatting and strict type checks passed. Result bundle: `.build/DerivedData/Logs/Test/Test-Shiplog-2026.10.05_14-26-06--0500.xcresult`.
+- Build **1.0.0 (3)** was signed, exported, and uploaded to App Store Connect with `https://shiplog.fun` as its public agent URL. TestFlight processing and the new build's physical-device acceptance are separate checks.
+
+
 ## Live setup and connection fixes
 
 - Production deployment is live at `https://shiplog.fun` on Vercel project `shiplog-agent`. The Vercel-registered domain is attached, verified, and serves HTTPS with a valid certificate. `https://shiplog-agent.vercel.app` remains an active alias for TestFlight build 2; it is not redirected away from API requests.

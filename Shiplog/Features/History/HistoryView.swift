@@ -104,36 +104,13 @@ struct JournalDayView: View {
                         symbol: "text.alignleft", title: "A quiet page.",
                         message: "No builds logged for this day. Progress doesn’t always need a record.")
                 } else {
-                    LazyVStack(spacing: 0) {
-                        ForEach(entries) { entry in
-                            NavigationLink {
-                                EntryDetailView(entry: entry)
-                            } label: {
-                                EntryRow(entry: entry)
-                            }
-                            .buttonStyle(.plain)
-                            Divider().padding(.leading, 48)
-                        }
-                    }
+                    JournalArticleView(entries: entries, story: summaries.first) { sheet = .reflection }
                 }
                 Button("Log a build for this day", systemImage: "plus") { sheet = .entry }
                     .frame(minHeight: 44)
-                Divider()
-                HStack {
-                    Eyebrow(
-                        text: summaries.first?.originRawValue == SummaryOrigin.generatedDraft.rawValue
-                            ? "Daily story" : "Daily reflection")
-                    Spacer()
-                    Button(summaries.isEmpty ? "Add" : "Edit") { sheet = .reflection }.frame(minHeight: 44)
-                }
-                if let reflection = summaries.first {
-                    Text(reflection.text).textSelection(.enabled)
-                    if reflection.originRawValue == SummaryOrigin.generatedDraft.rawValue {
-                        Label("AI draft · Based on your source activity", systemImage: "pencil").font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                } else {
-                    Text("Leave a thought for your future self.").foregroundStyle(.secondary)
+                if entries.isEmpty {
+                    Divider()
+                    JournalStoryView(story: summaries.first) { sheet = .reflection }
                 }
             }.frame(maxWidth: .infinity, alignment: .leading).padding(24)
         }

@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { Temporal } from '@js-temporal/polyfill';
 import { z } from 'zod';
 
-export const PROMPT_VERSION = 'journal-synthesis-3';
+export const PROMPT_VERSION = 'journal-synthesis-4';
 export const kindSchema = z.enum(['feature', 'improvement', 'fix', 'release', 'learning']);
 export const dayRequest = z.object({
   day: z.iso.date(),
@@ -79,6 +79,9 @@ export function validateSynthesis(raw: unknown, input: SynthesisInput): Synthesi
       if (used.has(id)) throw new Error('Evidence assigned to multiple entries');
       used.add(id);
     }
+  }
+  for (const id of sources.keys()) {
+    if (!used.has(id) && !reserved.has(id)) throw new Error('Evidence missing from the work log');
   }
   if (new Set(output.narrative.evidenceIDs).size !== output.narrative.evidenceIDs.length) throw new Error('Duplicate narrative evidence');
   for (const id of output.narrative.evidenceIDs) if (!used.has(id) && !(reserved.has(id) && sources.has(id))) throw new Error('Narrative cites work absent from entries');

@@ -76,17 +76,8 @@ struct TodayView: View {
                         Button("Log a build manually", systemImage: "plus") { sheet = .entry }
                             .font(.subheadline).frame(minHeight: 44).accessibilityIdentifier("today.logBuild")
                     } else {
-                        LazyVStack(spacing: 0) {
-                            ForEach(todayEntries) { entry in
-                                NavigationLink {
-                                    EntryDetailView(entry: entry)
-                                } label: {
-                                    EntryRow(entry: entry)
-                                }
-                                .buttonStyle(.plain)
-                                Divider().padding(.leading, 48)
-                            }
-                        }
+                        JournalArticleView(entries: todayEntries, story: reflection) { sheet = .reflection }
+                            .padding(.top, 12)
                         Button {
                             sheet = .entry
                         } label: {
@@ -96,28 +87,9 @@ struct TodayView: View {
                         .frame(minHeight: 44).accessibilityIdentifier("today.logBuild")
                     }
                 }
-                VStack(alignment: .leading, spacing: 14) {
+                if todayEntries.isEmpty {
                     Divider()
-                    HStack {
-                        Eyebrow(
-                            text: reflection?.originRawValue == SummaryOrigin.manual.rawValue || !connection.isConnected
-                                ? "Daily reflection" : "Daily story")
-                        Spacer()
-                        Button(reflection == nil ? "Add" : "Edit") { sheet = .reflection }
-                            .font(.subheadline.weight(.medium)).frame(minHeight: 44)
-                            .accessibilityIdentifier("today.reflection")
-                    }
-                    if let reflection {
-                        Text(reflection.text).font(.body).fixedSize(horizontal: false, vertical: true)
-                        Label(
-                            reflection.originRawValue == SummaryOrigin.generatedDraft.rawValue
-                                ? "AI draft · Based on your source activity" : "Written by you", systemImage: "pencil"
-                        )
-                        .font(.caption).foregroundStyle(.secondary)
-                    } else {
-                        Text("What moved forward? What did you learn?")
-                            .font(.subheadline).foregroundStyle(.secondary)
-                    }
+                    JournalStoryView(story: reflection) { sheet = .reflection }
                 }
             }.padding(.horizontal, 24).padding(.bottom, 32)
         }
@@ -141,19 +113,15 @@ struct TodayView: View {
             case .settings: SettingsView()
             }
         }
-        .onChange(of: scenePhase) { _, phase in
-            if phase == .active {
-                now = .now
-                Task { await connection.refresh(context: context) }
-            }
-        }
-        .task {
-            await connection.refresh(context: context)
-            // Refresh day boundaries while the app remains open; cancellation follows view lifetime.
+        .task(id: scenePhase) {
+            guard scenePhase == .active else { return }
+            now = .now
+            await connection.refreshIfNeeded(context: context)
+            // Day boundaries update independently of network refreshes. Inactive scenes cancel this task.
             while !Task.isCancelled {
+                do { try await Task.sleep(for: .seconds(30)) } catch { return }
                 now = .now
-                do { try await Task.sleep(for: .seconds(60)) } catch { return }
-                if scenePhase == .active { await connection.refresh(context: context) }
+                await connection.refreshIfNeeded(context: context)
             }
         }
     }

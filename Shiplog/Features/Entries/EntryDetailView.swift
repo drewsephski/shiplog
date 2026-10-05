@@ -45,7 +45,7 @@ struct EntryDetailView: View {
                 Text(entry.occurredAt, format: .dateTime.month(.wide).day().year().hour().minute())
                     .font(.subheadline).foregroundStyle(.secondary)
                 Divider()
-                if !entry.detail.isEmpty { Text(entry.detail).font(.body).textSelection(.enabled) }
+                if !entry.detail.isEmpty { JournalProseView(text: entry.detail) }
                 Label(originLabel, systemImage: "pencil.line")
                     .font(.caption).foregroundStyle(.secondary)
                 if let confidence = entry.confidence {

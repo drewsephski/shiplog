@@ -16,6 +16,8 @@
 		3A8D4BDC580A3FCE7900C052 /* ShiplogBrand.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF54E3266CEEF54C81FDC3A4 /* ShiplogBrand.swift */; };
 		40DE3ACEBFD8E5FF87373656 /* PersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A58A199D04937FD07D2222 /* PersistenceTests.swift */; };
 		472CA66302C7C518249DA998 /* SchemaV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = E115F96CABB34320819A4B7B /* SchemaV2.swift */; };
+		4EF6BA33D2310615FC7C9BB9 /* JournalRefreshPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ED8BDAD10800D6B8A9DC538 /* JournalRefreshPolicyTests.swift */; };
+		4FB5D7B74F0ED44F601CDEE8 /* JournalArticleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24B5F631B999932FF6B2D773 /* JournalArticleView.swift */; };
 		50DE9ACB3F34785F03855604 /* JournalLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E2445D3F7B8DEC4A9159455 /* JournalLogicTests.swift */; };
 		58232C2F0C1A749BB6D18C99 /* ProjectEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3901F616E7787B77B3D696 /* ProjectEditorView.swift */; };
 		5FE6717BA0ADF19E9D8F44A4 /* AgentClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF8203F6A0B6935B1A545B8 /* AgentClient.swift */; };
@@ -32,6 +34,7 @@
 		9AC1A7C2614BD4D5CC3726FC /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450031B8607F315FA7499CB7 /* HistoryView.swift */; };
 		9B212924453138CA800CA44A /* PreviewFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8BBE98EF40B5B09D86B165 /* PreviewFixtures.swift */; };
 		A424D0AE372E7761783A70C3 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949ADCE57020ABAF13F33AD4 /* AppRootView.swift */; };
+		B01D5A036DAE5BBFEC6CFF74 /* JournalRefreshPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF102BDDB285A436BBF3B4C /* JournalRefreshPolicy.swift */; };
 		B12564C5FE82D6FD597A5CB6 /* JournalDesign.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69FCDDD082D975B497E6CBAF /* JournalDesign.swift */; };
 		CE2C1B8CA4B278C6F00FB1CF /* ShiplogUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C7178ABEC941AFFCF85BFF /* ShiplogUITests.swift */; };
 		CFE3CAF4F770B009C5455951 /* BuildKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565B6AB448CE1C20FC64F067 /* BuildKind.swift */; };
@@ -67,6 +70,7 @@
 		068F78AC563BAC239AD164B3 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		06BAD7A8278EC3B9C1413133 /* ActivityProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityProvider.swift; sourceTree = "<group>"; };
 		19EF0CD0692DE7A19E69A59D /* JournalExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalExport.swift; sourceTree = "<group>"; };
+		24B5F631B999932FF6B2D773 /* JournalArticleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalArticleView.swift; sourceTree = "<group>"; };
 		296C86AF1ADC47C761E0C0F6 /* ShiplogApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShiplogApp.swift; sourceTree = "<group>"; };
 		2FC9A06342336A48D368BF7A /* Shiplog.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Shiplog.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3E2445D3F7B8DEC4A9159455 /* JournalLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalLogicTests.swift; sourceTree = "<group>"; };
@@ -76,6 +80,7 @@
 		565B6AB448CE1C20FC64F067 /* BuildKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildKind.swift; sourceTree = "<group>"; };
 		593E44AAE24C49DE6FB5AE97 /* JournalStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalStore.swift; sourceTree = "<group>"; };
 		5B3901F616E7787B77B3D696 /* ProjectEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectEditorView.swift; sourceTree = "<group>"; };
+		5ED8BDAD10800D6B8A9DC538 /* JournalRefreshPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalRefreshPolicyTests.swift; sourceTree = "<group>"; };
 		69FCDDD082D975B497E6CBAF /* JournalDesign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalDesign.swift; sourceTree = "<group>"; };
 		6A77C3D5A470F8C987016040 /* Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Validation.swift; sourceTree = "<group>"; };
 		7BDD72A4E8BF69CA9C537E5E /* EntryEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryEditorView.swift; sourceTree = "<group>"; };
@@ -92,6 +97,7 @@
 		AF54E3266CEEF54C81FDC3A4 /* ShiplogBrand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShiplogBrand.swift; sourceTree = "<group>"; };
 		B3C7178ABEC941AFFCF85BFF /* ShiplogUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShiplogUITests.swift; sourceTree = "<group>"; };
 		BE58ECB4CB6CAC22BB411756 /* ProjectDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectDetailView.swift; sourceTree = "<group>"; };
+		CAF102BDDB285A436BBF3B4C /* JournalRefreshPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalRefreshPolicy.swift; sourceTree = "<group>"; };
 		D2D51D08BFA6139E770D0C98 /* AutonomousJournal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutonomousJournal.swift; sourceTree = "<group>"; };
 		D5DAA0A3A57073CF9498BC2B /* EntryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryDetailView.swift; sourceTree = "<group>"; };
 		E115F96CABB34320819A4B7B /* SchemaV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaV2.swift; sourceTree = "<group>"; };
@@ -134,6 +140,7 @@
 			children = (
 				D5DAA0A3A57073CF9498BC2B /* EntryDetailView.swift */,
 				7BDD72A4E8BF69CA9C537E5E /* EntryEditorView.swift */,
+				24B5F631B999932FF6B2D773 /* JournalArticleView.swift */,
 			);
 			path = Entries;
 			sourceTree = "<group>";
@@ -200,6 +207,7 @@
 				D2D51D08BFA6139E770D0C98 /* AutonomousJournal.swift */,
 				565B6AB448CE1C20FC64F067 /* BuildKind.swift */,
 				05E411F073DC9DBBEC69D654 /* JournalLogic.swift */,
+				CAF102BDDB285A436BBF3B4C /* JournalRefreshPolicy.swift */,
 				6A77C3D5A470F8C987016040 /* Validation.swift */,
 			);
 			path = Domain;
@@ -257,6 +265,7 @@
 			children = (
 				F884BAE7BA02768A3DA7DF9E /* AutonomousJournalTests.swift */,
 				3E2445D3F7B8DEC4A9159455 /* JournalLogicTests.swift */,
+				5ED8BDAD10800D6B8A9DC538 /* JournalRefreshPolicyTests.swift */,
 				A6A58A199D04937FD07D2222 /* PersistenceTests.swift */,
 			);
 			path = ShiplogTests;
@@ -429,9 +438,11 @@
 				8DA59467DA7015D0043546FC /* GitHubConnectionView.swift in Sources */,
 				9AC1A7C2614BD4D5CC3726FC /* HistoryView.swift in Sources */,
 				D8F1A1B888018DE2384EDBB5 /* InsightsView.swift in Sources */,
+				4FB5D7B74F0ED44F601CDEE8 /* JournalArticleView.swift in Sources */,
 				B12564C5FE82D6FD597A5CB6 /* JournalDesign.swift in Sources */,
 				E69C9C00D745C77040AA7552 /* JournalExport.swift in Sources */,
 				FD7A95F6FBEE5EA39DCFDF16 /* JournalLogic.swift in Sources */,
+				B01D5A036DAE5BBFEC6CFF74 /* JournalRefreshPolicy.swift in Sources */,
 				77751BFB83A1D4E8DFD3C9AC /* JournalStore.swift in Sources */,
 				DE17B1AA61244E517B874A17 /* JournalSyncStore.swift in Sources */,
 				28096E3399BF67DFE5F99C45 /* Models.swift in Sources */,
@@ -464,6 +475,7 @@
 			files = (
 				7891F51C6AF1F0EA834C8603 /* AutonomousJournalTests.swift in Sources */,
 				50DE9ACB3F34785F03855604 /* JournalLogicTests.swift in Sources */,
+				4EF6BA33D2310615FC7C9BB9 /* JournalRefreshPolicyTests.swift in Sources */,
 				40DE3ACEBFD8E5FF87373656 /* PersistenceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -40,7 +40,10 @@ import XCTest
             app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "Shipped local search"))
                 .firstMatch.waitForExistence(timeout: 5))
         screenshot("Today — first build")
-        app.buttons["today.reflection"].tap()
+        let reflection = app.buttons["today.reflection"]
+        for _ in 0..<6 where !reflection.isHittable { app.swipeDown() }
+        XCTAssertTrue(reflection.isHittable)
+        reflection.tap()
         app.descendants(matching: .any).matching(identifier: "reflection.text").firstMatch.tap()
         app.descendants(matching: .any).matching(identifier: "reflection.text").firstMatch.typeText(
             "A small feature made the whole app more useful.")
@@ -110,5 +113,30 @@ import XCTest
         app.staticTexts["GitHub"].tap()
         XCTAssertTrue(app.staticTexts["Your activity.\nThe bigger picture."].waitForExistence(timeout: 5))
         screenshot("GitHub — connection and privacy")
+    }
+
+    func testDailyArticleKeepsFullParagraphsAndSourceNavigationInHistory() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--preview-data", "-AppleInterfaceStyle", "Dark"]
+        app.launch()
+        let paragraph =
+            "Finding an old idea now takes a moment, not a scroll. The next thing to check is how the index behaves with a much larger notebook."
+        XCTAssertTrue(
+            app.staticTexts.matching(NSPredicate(format: "label == %@", paragraph)).firstMatch.waitForExistence(
+                timeout: 15))
+        XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "connection.progress").firstMatch.exists)
+        let details = app.buttons["View sources and edit: Made search feel instant"]
+        for _ in 0..<6 where !details.isHittable { app.swipeUp() }
+        XCTAssertTrue(details.isHittable)
+        screenshot("Today — complete article section")
+        details.tap()
+        XCTAssertTrue(app.staticTexts["Recorded by you"].waitForExistence(timeout: 5))
+        app.navigationBars.buttons.firstMatch.tap()
+        app.tabBars.buttons["History"].tap()
+        app.staticTexts[Date.now.formatted(.dateTime.weekday(.wide))].firstMatch.tap()
+        XCTAssertTrue(
+            app.staticTexts.matching(NSPredicate(format: "label == %@", paragraph)).firstMatch.waitForExistence(
+                timeout: 5))
+        screenshot("History — daily article")
     }
 }

@@ -4,7 +4,7 @@ import SwiftUI
 struct ConnectionStatusView: View {
     @Environment(GitHubConnection.self) private var connection
     var body: some View {
-        if connection.isBusy {
+        if connection.isBusy && !connection.isRefreshingInBackground {
             ProgressView(connection.status).font(.subheadline).accessibilityIdentifier("connection.progress")
         } else if let error = connection.errorMessage {
             Label(error, systemImage: "exclamationmark.circle").font(.subheadline).foregroundStyle(.secondary)

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { z } from 'zod';
-import { synthesisSchema, OpenRouterJournalSynthesisService } from '../lib/synthesis';
+import { synthesisSchema, decodeSynthesis, OpenRouterJournalSynthesisService } from '../lib/synthesis';
 import { browserRoute, connectionCSRF, connectionStartURL, html } from '../lib/connect';
 import { PublicError } from '../lib/security';
 import { dayInterval, evidenceID, generationHash, validateSynthesis, reconciliationDays, type ActivityEvidence, type SynthesisInput } from '../lib/domain';
@@ -34,18 +34,22 @@ describe('civil days and identity',()=>{
   });
 });
 describe('synthesis provenance',()=>{
-  it('constrains provider citations to canonical evidence identities',()=>{
+  it('requires canonical assignments for the complete log and rejects absent sections',()=>{
     const schema=synthesisSchema(input);
-    expect(schema.parse(output)).toEqual(output);
-    expect(()=>schema.parse({...output,entries:[{...output.entries[0],evidenceIDs:[evidence.externalID]}]})).toThrow();
-    expect(()=>schema.parse({...output,narrative:{...output.narrative,evidenceIDs:[evidence.externalID]}})).toThrow();
-    expect(()=>schema.parse({...output,entries:[{...output.entries[0],repositoryID:'other'}]})).toThrow();
+    const entry={repositoryID:'12',title:'Improved onboarding',detail:{change:'Simplified the connection screen.',context:''},kind:'improvement',confidence:0.9};
+    const draft={entries:[entry],evidenceAssignments:{[evidence.id]:0},narrative:output.narrative};
+    expect(decodeSynthesis(draft,input)).toEqual(output);
+    expect(()=>schema.parse({...draft,evidenceAssignments:{}})).toThrow();
+    expect(()=>schema.parse({...draft,evidenceAssignments:{[evidence.externalID]:0}})).toThrow();
+    expect(()=>decodeSynthesis({...draft,evidenceAssignments:{[evidence.id]:1}},input)).toThrow('absent section');
+    expect(()=>schema.parse({...draft,narrative:{...output.narrative,evidenceIDs:[evidence.externalID]}})).toThrow();
+    expect(()=>schema.parse({...draft,entries:[{...entry,repositoryID:'other'}]})).toThrow();
+    expect(()=>schema.parse({...draft,entries:Array.from({length:5},()=>entry)})).toThrow();
   });
-  it('excludes protected evidence from generated entries but permits narrative citations',()=>{
+  it('excludes protected evidence from assignments but permits narrative citations',()=>{
     const protectedInput={...input,existing:[{id:'saved',title:'My words',detail:'',evidenceIDs:[evidence.id],userEdited:true}]};
-    const schema=synthesisSchema(protectedInput);
-    expect(()=>schema.parse(output)).toThrow();
-    expect(schema.parse({...output,entries:[]})).toEqual({...output,entries:[]});
+    expect(()=>decodeSynthesis({entries:[],evidenceAssignments:{[evidence.id]:0},narrative:output.narrative},protectedInput)).toThrow();
+    expect(decodeSynthesis({entries:[],evidenceAssignments:{},narrative:output.narrative},protectedInput)).toEqual({...output,entries:[]});
   });
   it('returns an empty quiet day without sending a provider request',async()=>{
     const fetch=vi.spyOn(globalThis,'fetch');
@@ -54,8 +58,32 @@ describe('synthesis provenance',()=>{
       expect(fetch).not.toHaveBeenCalled();
     } finally { fetch.mockRestore(); }
   });
+  it('revises an invalid provider draft once and publishes only the validated complete result',async()=>{
+    const entry={repositoryID:'12',title:'Improved onboarding',detail:{change:'Simplified the connection screen.',context:''},kind:'improvement',confidence:0.9};
+    const draft={entries:[entry],evidenceAssignments:{[evidence.id]:0},narrative:output.narrative};
+    const response=(value:unknown)=>Response.json({choices:[{message:{content:JSON.stringify(value)}}]});
+    const fetch=vi.spyOn(globalThis,'fetch');
+    vi.stubEnv('OPENROUTER_API_KEY','test-only-key');vi.stubEnv('OPENROUTER_MODEL','test-only-model');
+    try {
+      fetch.mockResolvedValueOnce(response({...draft,evidenceAssignments:{}})).mockResolvedValueOnce(response(draft));
+      expect(await new OpenRouterJournalSynthesisService().synthesize(input)).toEqual(output);
+      expect(fetch).toHaveBeenCalledTimes(2);
+      fetch.mockClear();
+      fetch.mockImplementation(async()=>response({...draft,evidenceAssignments:{}}));
+      await expect(new OpenRouterJournalSynthesisService().synthesize(input)).rejects.toMatchObject({code:'invalid_generation'});
+      expect(fetch).toHaveBeenCalledTimes(2);
+    } finally { fetch.mockRestore();vi.unstubAllEnvs(); }
+  });
   it('accepts grouped supported work',()=>expect(validateSynthesis(output,input)).toEqual(output));
   it('rejects unknown evidence before publishing',()=>expect(()=>validateSynthesis({...output,entries:[{...output.entries[0],evidenceIDs:['invented']}]},input)).toThrow());
+  it('requires the complete work log without consuming evidence reserved by user edits',()=>{
+    const second={...evidence,id:evidenceID('12','commit','second'),externalID:'second'};
+    const completeInput={...input,evidence:[evidence,second]};
+    expect(()=>validateSynthesis(output,completeInput)).toThrow('Evidence missing');
+    expect(validateSynthesis({...output,entries:[{...output.entries[0],evidenceIDs:[evidence.id,second.id]}]},completeInput).entries).toHaveLength(1);
+    const protectedInput={...completeInput,existing:[{id:'saved',title:'My words',detail:'',evidenceIDs:[second.id],userEdited:true}]};
+    expect(validateSynthesis(output,protectedInput)).toEqual(output);
+  });
   it('rejects repository mixing, duplicate citations and unsupported narrative',()=>{
     expect(()=>validateSynthesis({...output,entries:[{...output.entries[0],repositoryID:'other'}]},input)).toThrow();
     expect(()=>validateSynthesis({...output,entries:[...output.entries,...output.entries]},input)).toThrow();

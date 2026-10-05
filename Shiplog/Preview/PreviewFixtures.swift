@@ -26,7 +26,7 @@
                 BuildEntry(
                     title: "Made search feel instant",
                     detail:
-                        "Added local indexing and keyboard shortcuts. Finding an old idea now takes a moment, not a scroll.",
+                        "Added local indexing and keyboard shortcuts so searching does not interrupt writing. The search index stays on the device with the notes.\n\nFinding an old idea now takes a moment, not a scroll. The next thing to check is how the index behaves with a much larger notebook.",
                     kind: .improvement, occurredAt: firstTime, project: project))
             context.insert(
                 BuildEntry(
