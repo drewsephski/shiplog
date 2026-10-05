@@ -11,7 +11,7 @@ struct SettingsView: View {
             List {
                 Section {
                     HStack(spacing: 14) {
-                        ShiplogMark()
+                        ShiplogAppIcon()
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Shiplog").font(.headline)
                             Text("A journal for the things you build.").font(.caption).foregroundStyle(.secondary)

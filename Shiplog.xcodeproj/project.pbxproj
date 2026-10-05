@@ -12,6 +12,7 @@
 		24F1FD95269F1FFD1E15CD04 /* ProjectsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 895AF87246823AAE26C177B3 /* ProjectsView.swift */; };
 		28096E3399BF67DFE5F99C45 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6280D8B4E7403A4E1C8BC9 /* Models.swift */; };
 		383559F2DE44E22B2E107A24 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453BA4817E2012D0FC24A4FD /* SettingsView.swift */; };
+		3A8D4BDC580A3FCE7900C052 /* ShiplogBrand.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF54E3266CEEF54C81FDC3A4 /* ShiplogBrand.swift */; };
 		40DE3ACEBFD8E5FF87373656 /* PersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A58A199D04937FD07D2222 /* PersistenceTests.swift */; };
 		50DE9ACB3F34785F03855604 /* JournalLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E2445D3F7B8DEC4A9159455 /* JournalLogicTests.swift */; };
 		58232C2F0C1A749BB6D18C99 /* ProjectEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3901F616E7787B77B3D696 /* ProjectEditorView.swift */; };
@@ -80,6 +81,7 @@
 		9D23D4F2CEB3FE1701D04EFD /* ShiplogUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ShiplogUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6A58A199D04937FD07D2222 /* PersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceTests.swift; sourceTree = "<group>"; };
 		AE8BBE98EF40B5B09D86B165 /* PreviewFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewFixtures.swift; sourceTree = "<group>"; };
+		AF54E3266CEEF54C81FDC3A4 /* ShiplogBrand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShiplogBrand.swift; sourceTree = "<group>"; };
 		B3C7178ABEC941AFFCF85BFF /* ShiplogUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShiplogUITests.swift; sourceTree = "<group>"; };
 		BE58ECB4CB6CAC22BB411756 /* ProjectDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectDetailView.swift; sourceTree = "<group>"; };
 		D5DAA0A3A57073CF9498BC2B /* EntryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryDetailView.swift; sourceTree = "<group>"; };
@@ -147,6 +149,7 @@
 			isa = PBXGroup;
 			children = (
 				69FCDDD082D975B497E6CBAF /* JournalDesign.swift */,
+				AF54E3266CEEF54C81FDC3A4 /* ShiplogBrand.swift */,
 			);
 			path = Design;
 			sourceTree = "<group>";
@@ -414,6 +417,7 @@
 				7E0DBF12F27EFCDA4388DCF8 /* ReflectionEditorView.swift in Sources */,
 				383559F2DE44E22B2E107A24 /* SettingsView.swift in Sources */,
 				83530AD5E164589F6F8E2C80 /* ShiplogApp.swift in Sources */,
+				3A8D4BDC580A3FCE7900C052 /* ShiplogBrand.swift in Sources */,
 				63282D73A3AB72C775FA4086 /* TodayView.swift in Sources */,
 				EA5E4DA90478367699AA1D52 /* Validation.swift in Sources */,
 			);

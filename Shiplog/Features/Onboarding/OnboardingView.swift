@@ -5,10 +5,7 @@ struct OnboardingView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 32) {
-                HStack(spacing: 12) {
-                    ShiplogMark()
-                    Text("Shiplog").font(.title3.weight(.semibold))
-                }.padding(.top, 32)
+                ShiplogLogo(markSize: 48).padding(.top, 32)
                 VStack(alignment: .leading, spacing: 16) {
                     Eyebrow(text: "For software builders")
                     Text("You’re building\nsomething.\nKeep the story.")

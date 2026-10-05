@@ -7,18 +7,6 @@ enum JournalDesign {
     static let hairline = Color.primary.opacity(0.12)
 }
 
-struct ShiplogMark: View {
-    var size: CGFloat = 42
-    var body: some View {
-        Image(systemName: "terminal")
-            .font(.system(size: size * 0.48, weight: .medium))
-            .foregroundStyle(JournalDesign.background)
-            .frame(width: size, height: size)
-            .background(.primary, in: RoundedRectangle(cornerRadius: size * 0.25))
-            .accessibilityHidden(true)
-    }
-}
-
 struct Eyebrow: View {
     let text: String
     var body: some View {
