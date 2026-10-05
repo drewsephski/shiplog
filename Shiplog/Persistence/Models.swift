@@ -115,12 +115,3 @@ enum ShiplogSchemaV1: VersionedSchema {
     }
 }
 
-typealias Project = ShiplogSchemaV1.Project
-typealias BuildEntry = ShiplogSchemaV1.BuildEntry
-typealias SourceActivity = ShiplogSchemaV1.SourceActivity
-typealias JournalSummary = ShiplogSchemaV1.JournalSummary
-
-enum ShiplogMigrationPlan: SchemaMigrationPlan {
-    static var schemas: [any VersionedSchema.Type] { [ShiplogSchemaV1.self] }
-    static var stages: [MigrationStage] { [] }
-}

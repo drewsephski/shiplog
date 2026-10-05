@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct OnboardingView: View {
+    @Environment(\.modelContext) private var context
+    @Environment(GitHubConnection.self) private var connection
     let onContinue: () -> Void
     var body: some View {
         ScrollView {
@@ -12,7 +14,7 @@ struct OnboardingView: View {
                         .font(.system(.largeTitle, design: .default, weight: .bold))
                         .tracking(-1.2)
                         .fixedSize(horizontal: false, vertical: true)
-                    Text("A personal journal of what you ship, one meaningful piece of work at a time.")
+                    Text("Connect GitHub. Shiplog turns your work into a journal, one meaningful piece at a time.")
                         .font(.title3).foregroundStyle(.secondary)
                 }
                 Divider()
@@ -24,16 +26,27 @@ struct OnboardingView: View {
                         "square.stack.3d.up", title: "See your projects take shape",
                         detail: "Keep the progress and the decisions together.")
                     benefit(
-                        "lock", title: "Start with your own words",
-                        detail: "Your journal stays on this iPhone. GitHub connection is coming later.")
+                        "lock", title: "Choose what Shiplog sees",
+                        detail: "Select repositories, review the data transfer, and keep control of every draft.")
                 }
             }.padding(.horizontal, 28).padding(.bottom, 28)
         }
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 12) {
-                PrimaryAction(title: "Start my journal", symbol: "arrow.right", action: onContinue)
+                if connection.isBusy { ProgressView(connection.status).font(.subheadline) }
+                if let error = connection.errorMessage {
+                    Text(error).font(.caption).foregroundStyle(.secondary).accessibilityIdentifier("connection.error")
+                }
+                PrimaryAction(title: "Connect GitHub", symbol: "arrow.right") {
+                    Task {
+                        await connection.connect(context: context)
+                        if connection.isConnected { onContinue() }
+                    }
+                }
+                .disabled(connection.isBusy).accessibilityIdentifier("onboarding.github")
+                Button("Keep a journal manually", action: onContinue)
+                    .font(.subheadline).frame(minHeight: 44).disabled(connection.isBusy)
                     .accessibilityIdentifier("onboarding.start")
-                Text("No account needed.").font(.caption).foregroundStyle(.secondary)
             }.padding(24).background(JournalDesign.background)
         }
     }

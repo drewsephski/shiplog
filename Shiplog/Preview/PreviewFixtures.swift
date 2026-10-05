@@ -56,17 +56,17 @@
 
     #Preview("Today · sample journal") {
         if let container = try? PreviewFixtures.container() {
-            NavigationStack { TodayView() }.modelContainer(container).preferredColorScheme(.dark)
+            NavigationStack { TodayView() }.modelContainer(container).environment(GitHubConnection()).preferredColorScheme(.dark)
         }
     }
 
     #Preview("Today · first use") {
         if let container = try? PreviewFixtures.container(populated: false) {
-            NavigationStack { TodayView() }.modelContainer(container)
+            NavigationStack { TodayView() }.modelContainer(container).environment(GitHubConnection())
         }
     }
 
-    #Preview("Onboarding") { OnboardingView {}.preferredColorScheme(.dark) }
+    #Preview("Onboarding") { OnboardingView {}.environment(GitHubConnection()).preferredColorScheme(.dark) }
 
     #Preview("Projects · sample journal") {
         if let container = try? PreviewFixtures.container() {

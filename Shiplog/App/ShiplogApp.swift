@@ -5,13 +5,14 @@ import SwiftUI
 @main struct ShiplogApp: App {
     @State private var container: ModelContainer?
     @State private var storeFailed = false
+    @State private var connection = GitHubConnection()
     private static let logger = Logger(subsystem: "com.shiplog.Shiplog", category: "persistence")
 
     var body: some Scene {
         WindowGroup {
             Group {
                 if let container {
-                    AppRootView().modelContainer(container)
+                    AppRootView().modelContainer(container).environment(connection)
                 } else if storeFailed {
                     ContentUnavailableView {
                         Label("Your journal couldn’t open", systemImage: "externaldrive.badge.exclamationmark")

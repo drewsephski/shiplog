@@ -62,24 +62,22 @@ func write(_ data: Data, to name: String) throws {
 }
 
 func rasterPNG(image: NSImage, size: Int, transparent: Bool) throws -> Data {
-    guard
-        let bitmap = NSBitmapImageRep(
-            bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size,
-            bitsPerSample: 8, samplesPerPixel: transparent ? 4 : 3,
-            hasAlpha: transparent, isPlanar: false, colorSpaceName: .deviceRGB,
-            bytesPerRow: 0, bitsPerPixel: 0)
+    let alpha = transparent ? CGImageAlphaInfo.premultipliedLast : .noneSkipLast
+    guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
+        let bitmap = CGContext(
+            data: nil, width: size, height: size, bitsPerComponent: 8,
+            bytesPerRow: size * 4, space: colorSpace, bitmapInfo: alpha.rawValue),
+        let source = image.cgImage(forProposedRect: nil, context: nil, hints: nil)
     else { throw BrandExportError.encodingFailed }
-    NSGraphicsContext.saveGraphicsState()
-    defer { NSGraphicsContext.restoreGraphicsState() }
-    NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmap)
-    NSGraphicsContext.current?.imageInterpolation = .high
-    let bounds = NSRect(x: 0, y: 0, width: size, height: size)
+    bitmap.interpolationQuality = .high
+    let bounds = CGRect(x: 0, y: 0, width: size, height: size)
     if !transparent {
-        NSColor(calibratedRed: 16 / 255, green: 17 / 255, blue: 19 / 255, alpha: 1).setFill()
-        NSBezierPath(rect: bounds).fill()
+        bitmap.setFillColor(CGColor(srgbRed: 16 / 255, green: 17 / 255, blue: 19 / 255, alpha: 1))
+        bitmap.fill(bounds)
     }
-    image.draw(in: bounds, from: .zero, operation: .sourceOver, fraction: 1)
-    guard let data = bitmap.representation(using: .png, properties: [:])
+    bitmap.draw(source, in: bounds)
+    guard let result = bitmap.makeImage(),
+        let data = NSBitmapImageRep(cgImage: result).representation(using: .png, properties: [:])
     else { throw BrandExportError.encodingFailed }
     return data
 }

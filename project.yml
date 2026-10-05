@@ -25,11 +25,19 @@ settings:
     INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: UIInterfaceOrientationPortrait
     ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     SWIFT_EMIT_LOC_STRINGS: YES
+    INFOPLIST_KEY_ShiplogAgentURL: "$(SHIPLOG_AGENT_URL)"
+    SHIPLOG_AGENT_URL: ""
 targets:
   Shiplog:
     type: application
     platform: iOS
     sources: [Shiplog]
+    info:
+      path: config/Info.plist
+      properties:
+        CFBundleURLTypes:
+          - CFBundleURLName: com.drewsepeczi.shiplog.github
+            CFBundleURLSchemes: [shiplog]
     settings:
       base:
         TARGETED_DEVICE_FAMILY: '1'

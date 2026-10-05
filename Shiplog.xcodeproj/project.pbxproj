@@ -11,11 +11,14 @@
 		227E7D7B5D888B20D2134F5A /* ActivityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06BAD7A8278EC3B9C1413133 /* ActivityProvider.swift */; };
 		24F1FD95269F1FFD1E15CD04 /* ProjectsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 895AF87246823AAE26C177B3 /* ProjectsView.swift */; };
 		28096E3399BF67DFE5F99C45 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6280D8B4E7403A4E1C8BC9 /* Models.swift */; };
+		3220C12AC69CEADDEE11263B /* GitHubConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAE74A831516AAB97C937FCA /* GitHubConnection.swift */; };
 		383559F2DE44E22B2E107A24 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453BA4817E2012D0FC24A4FD /* SettingsView.swift */; };
 		3A8D4BDC580A3FCE7900C052 /* ShiplogBrand.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF54E3266CEEF54C81FDC3A4 /* ShiplogBrand.swift */; };
 		40DE3ACEBFD8E5FF87373656 /* PersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A58A199D04937FD07D2222 /* PersistenceTests.swift */; };
+		472CA66302C7C518249DA998 /* SchemaV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = E115F96CABB34320819A4B7B /* SchemaV2.swift */; };
 		50DE9ACB3F34785F03855604 /* JournalLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E2445D3F7B8DEC4A9159455 /* JournalLogicTests.swift */; };
 		58232C2F0C1A749BB6D18C99 /* ProjectEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3901F616E7787B77B3D696 /* ProjectEditorView.swift */; };
+		5FE6717BA0ADF19E9D8F44A4 /* AgentClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF8203F6A0B6935B1A545B8 /* AgentClient.swift */; };
 		63282D73A3AB72C775FA4086 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9336D181B68E329A416C5A77 /* TodayView.swift */; };
 		643A72FB9AA2CE41187BCDE6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 476C47F37604B9CFFDB58C50 /* Assets.xcassets */; };
 		708E380E3A8CA4AEEC90C4A1 /* ProjectDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE58ECB4CB6CAC22BB411756 /* ProjectDetailView.swift */; };
@@ -23,6 +26,7 @@
 		7E0DBF12F27EFCDA4388DCF8 /* ReflectionEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 036368E3A2004F596E69C18B /* ReflectionEditorView.swift */; };
 		83530AD5E164589F6F8E2C80 /* ShiplogApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 296C86AF1ADC47C761E0C0F6 /* ShiplogApp.swift */; };
 		8D111677440B1074E5437D49 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D95129FEFD2E0D8B99886D /* OnboardingView.swift */; };
+		8DA59467DA7015D0043546FC /* GitHubConnectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8DDF3DC72A08051CB2A6892 /* GitHubConnectionView.swift */; };
 		8DC97FDD371B0C58B267B8E9 /* EntryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5DAA0A3A57073CF9498BC2B /* EntryDetailView.swift */; };
 		9AC1A7C2614BD4D5CC3726FC /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450031B8607F315FA7499CB7 /* HistoryView.swift */; };
 		9B212924453138CA800CA44A /* PreviewFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8BBE98EF40B5B09D86B165 /* PreviewFixtures.swift */; };
@@ -31,6 +35,8 @@
 		CE2C1B8CA4B278C6F00FB1CF /* ShiplogUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C7178ABEC941AFFCF85BFF /* ShiplogUITests.swift */; };
 		CFE3CAF4F770B009C5455951 /* BuildKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565B6AB448CE1C20FC64F067 /* BuildKind.swift */; };
 		D8F1A1B888018DE2384EDBB5 /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9380E326487E3133EFA4D958 /* InsightsView.swift */; };
+		DE17B1AA61244E517B874A17 /* JournalSyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF5D6105ACF80A7EC54DC8AB /* JournalSyncStore.swift */; };
+		E4A7F45247A23DD75EB18327 /* AutonomousJournal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D51D08BFA6139E770D0C98 /* AutonomousJournal.swift */; };
 		E69C9C00D745C77040AA7552 /* JournalExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19EF0CD0692DE7A19E69A59D /* JournalExport.swift */; };
 		E87123E0BC1C332A77C9E945 /* EntryEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDD72A4E8BF69CA9C537E5E /* EntryEditorView.swift */; };
 		EA5E4DA90478367699AA1D52 /* Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A77C3D5A470F8C987016040 /* Validation.swift */; };
@@ -72,6 +78,7 @@
 		69FCDDD082D975B497E6CBAF /* JournalDesign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalDesign.swift; sourceTree = "<group>"; };
 		6A77C3D5A470F8C987016040 /* Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Validation.swift; sourceTree = "<group>"; };
 		7BDD72A4E8BF69CA9C537E5E /* EntryEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryEditorView.swift; sourceTree = "<group>"; };
+		7FF8203F6A0B6935B1A545B8 /* AgentClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentClient.swift; sourceTree = "<group>"; };
 		895AF87246823AAE26C177B3 /* ProjectsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectsView.swift; sourceTree = "<group>"; };
 		9336D181B68E329A416C5A77 /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		9380E326487E3133EFA4D958 /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
@@ -84,8 +91,13 @@
 		AF54E3266CEEF54C81FDC3A4 /* ShiplogBrand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShiplogBrand.swift; sourceTree = "<group>"; };
 		B3C7178ABEC941AFFCF85BFF /* ShiplogUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShiplogUITests.swift; sourceTree = "<group>"; };
 		BE58ECB4CB6CAC22BB411756 /* ProjectDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectDetailView.swift; sourceTree = "<group>"; };
+		D2D51D08BFA6139E770D0C98 /* AutonomousJournal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutonomousJournal.swift; sourceTree = "<group>"; };
 		D5DAA0A3A57073CF9498BC2B /* EntryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryDetailView.swift; sourceTree = "<group>"; };
+		E115F96CABB34320819A4B7B /* SchemaV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaV2.swift; sourceTree = "<group>"; };
 		E9D95129FEFD2E0D8B99886D /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		EAE74A831516AAB97C937FCA /* GitHubConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubConnection.swift; sourceTree = "<group>"; };
+		F8DDF3DC72A08051CB2A6892 /* GitHubConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubConnectionView.swift; sourceTree = "<group>"; };
+		FF5D6105ACF80A7EC54DC8AB /* JournalSyncStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalSyncStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -101,6 +113,7 @@
 		0E5FE208A84AC36972EB0A69 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				F8DDF3DC72A08051CB2A6892 /* GitHubConnectionView.swift */,
 				453BA4817E2012D0FC24A4FD /* SettingsView.swift */,
 			);
 			path = Settings;
@@ -182,6 +195,7 @@
 		8A40533D62E304CF287AFEE8 /* Domain */ = {
 			isa = PBXGroup;
 			children = (
+				D2D51D08BFA6139E770D0C98 /* AutonomousJournal.swift */,
 				565B6AB448CE1C20FC64F067 /* BuildKind.swift */,
 				05E411F073DC9DBBEC69D654 /* JournalLogic.swift */,
 				6A77C3D5A470F8C987016040 /* Validation.swift */,
@@ -193,6 +207,7 @@
 			isa = PBXGroup;
 			children = (
 				06BAD7A8278EC3B9C1413133 /* ActivityProvider.swift */,
+				7FF8203F6A0B6935B1A545B8 /* AgentClient.swift */,
 				19EF0CD0692DE7A19E69A59D /* JournalExport.swift */,
 			);
 			path = Services;
@@ -219,6 +234,7 @@
 			isa = PBXGroup;
 			children = (
 				949ADCE57020ABAF13F33AD4 /* AppRootView.swift */,
+				EAE74A831516AAB97C937FCA /* GitHubConnection.swift */,
 				296C86AF1ADC47C761E0C0F6 /* ShiplogApp.swift */,
 			);
 			path = App;
@@ -263,7 +279,9 @@
 			isa = PBXGroup;
 			children = (
 				593E44AAE24C49DE6FB5AE97 /* JournalStore.swift */,
+				FF5D6105ACF80A7EC54DC8AB /* JournalSyncStore.swift */,
 				9C6280D8B4E7403A4E1C8BC9 /* Models.swift */,
+				E115F96CABB34320819A4B7B /* SchemaV2.swift */,
 			);
 			path = Persistence;
 			sourceTree = "<group>";
@@ -398,16 +416,21 @@
 			buildActionMask = 2147483647;
 			files = (
 				227E7D7B5D888B20D2134F5A /* ActivityProvider.swift in Sources */,
+				5FE6717BA0ADF19E9D8F44A4 /* AgentClient.swift in Sources */,
 				A424D0AE372E7761783A70C3 /* AppRootView.swift in Sources */,
+				E4A7F45247A23DD75EB18327 /* AutonomousJournal.swift in Sources */,
 				CFE3CAF4F770B009C5455951 /* BuildKind.swift in Sources */,
 				8DC97FDD371B0C58B267B8E9 /* EntryDetailView.swift in Sources */,
 				E87123E0BC1C332A77C9E945 /* EntryEditorView.swift in Sources */,
+				3220C12AC69CEADDEE11263B /* GitHubConnection.swift in Sources */,
+				8DA59467DA7015D0043546FC /* GitHubConnectionView.swift in Sources */,
 				9AC1A7C2614BD4D5CC3726FC /* HistoryView.swift in Sources */,
 				D8F1A1B888018DE2384EDBB5 /* InsightsView.swift in Sources */,
 				B12564C5FE82D6FD597A5CB6 /* JournalDesign.swift in Sources */,
 				E69C9C00D745C77040AA7552 /* JournalExport.swift in Sources */,
 				FD7A95F6FBEE5EA39DCFDF16 /* JournalLogic.swift in Sources */,
 				77751BFB83A1D4E8DFD3C9AC /* JournalStore.swift in Sources */,
+				DE17B1AA61244E517B874A17 /* JournalSyncStore.swift in Sources */,
 				28096E3399BF67DFE5F99C45 /* Models.swift in Sources */,
 				8D111677440B1074E5437D49 /* OnboardingView.swift in Sources */,
 				9B212924453138CA800CA44A /* PreviewFixtures.swift in Sources */,
@@ -415,6 +438,7 @@
 				58232C2F0C1A749BB6D18C99 /* ProjectEditorView.swift in Sources */,
 				24F1FD95269F1FFD1E15CD04 /* ProjectsView.swift in Sources */,
 				7E0DBF12F27EFCDA4388DCF8 /* ReflectionEditorView.swift in Sources */,
+				472CA66302C7C518249DA998 /* SchemaV2.swift in Sources */,
 				383559F2DE44E22B2E107A24 /* SettingsView.swift in Sources */,
 				83530AD5E164589F6F8E2C80 /* ShiplogApp.swift in Sources */,
 				3A8D4BDC580A3FCE7900C052 /* ShiplogBrand.swift in Sources */,
@@ -477,6 +501,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = config/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -563,6 +588,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Shiplog;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_ShiplogAgentURL = "$(SHIPLOG_AGENT_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -574,6 +600,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SHIPLOG_AGENT_URL = "";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -637,6 +664,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Shiplog;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_ShiplogAgentURL = "$(SHIPLOG_AGENT_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -647,6 +675,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SHIPLOG_AGENT_URL = "";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -693,6 +722,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = config/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

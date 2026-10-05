@@ -30,6 +30,10 @@ A scheme-based device build initially rejected destination discovery (`iOS 26.5 
 
 **Not verified:** successful native UI-test execution, app screenshots, SwiftUI Canvas rendering, visual finish in light/dark appearance, VoiceOver, extreme Dynamic Type, installation on a physical device or public App Store delivery. Those remain required before public release. Debug and Release source checks are separate from these claims. The simulator app and test bundles built successfully; the first test run stalled on the new simulator's CoreLocation data migration during OS startup. The dedicated simulator was restarted without erasing its data for a second attempt. Both attempts were stopped after startup/launch stalled; no native UI-test pass is claimed. The first attempt reported `NSMachErrorDomain -308 (ipc/mig) server died` while the dedicated simulator was shutting down. The 17 shared domain/persistence tests passed separately on macOS.
 
+## Branding follow-up
+
+The folded S identity and shared logo primitives were added after TestFlight build 1. Both final iPhone Release and simulator Debug builds passed with the new assets. Swift 6 type checks and strict formatting lint passed. The final Debug app installed and launched on the dedicated Shiplog QA simulator with the isolated `--ui-testing` store, and onboarding branding was visually checked in light and dark appearance. See [brand verification](../brand/README.md) for exports and screenshots. This resolves simulator app-launch and onboarding visual proof for this build; full native UI-test execution, physical-device acceptance and a new branded TestFlight build remain unverified.
+
 ## Reproduce
 
 ```sh

@@ -2,6 +2,8 @@
 
 A folded S connects the journal to the work moving forward. The icon uses warm ivory paper against near-black; the companion logo reduces that silhouette to a single color.
 
+![Shiplog icon and logo in dark and light treatments](preview.png)
+
 ## Deliverables
 
 - `exports/shiplog-app-icon.png` — opaque 1024 × 1024 App Store icon, square and unmasked.
@@ -26,6 +28,15 @@ swift scripts/generate-icon.swift
 ```
 
 The script sizes and encodes the icon, and produces matching SVG, PDF and PNG logo exports from one canonical vector path. It uses only Apple frameworks. It does not regenerate artwork or upload a build. Changes appear on installed devices after a new app build is distributed; TestFlight build 1 retains the original icon.
+
+## Verification — October 5, 2026
+
+- Final iPhone Release build and simulator Debug build both completed successfully, including the new asset catalog.
+- Debug and Release Swift 6 type checks, native UI-test source type check, and strict Swift formatting lint passed. No domain behavior changed, so the domain tests were not rerun for this asset update.
+- App icon is an opaque sRGB 1024 × 1024 PNG; icon and logo pixels were checked after export. The transparent PNG has alpha, the SVG parses, every asset-catalog file reference resolves, and the template PDF preserves vector representation.
+- The preview above renders the icon, lockup and 20/28/36-point marks in light and dark treatments. It is an identity proof, not a screenshot of an iPhone screen.
+- The final Debug app installed and launched successfully on the dedicated Shiplog QA iPhone simulator with an isolated in-memory test store. The new onboarding lockup was visually verified in both appearances; screenshots are `onboarding-light.png` and `onboarding-dark.png`. This does not claim full UI-test execution or physical-device verification.
+- No new TestFlight build was uploaded in this branding pass.
 
 ## Artwork provenance
 

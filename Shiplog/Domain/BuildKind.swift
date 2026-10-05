@@ -24,7 +24,7 @@ enum BuildKind: String, Codable, CaseIterable, Identifiable, Sendable {
 }
 
 enum EntryOrigin: String, Codable, Sendable {
-    case manual, imported
+    case manual, imported, generated, userEditedGenerated
 }
 
 enum SummaryPeriod: String, Codable, Sendable {
@@ -32,5 +32,5 @@ enum SummaryPeriod: String, Codable, Sendable {
 }
 
 enum SummaryOrigin: String, Codable, Sendable {
-    case manual, generatedDraft
+    case manual, generatedDraft, userEditedGenerated
 }

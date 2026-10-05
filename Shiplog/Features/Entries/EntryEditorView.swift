@@ -68,7 +68,7 @@ struct EntryEditorView: View {
                         Picker("Project", selection: $projectID) {
                             Text("Choose a project").tag(Optional<UUID>.none)
                             ForEach(selectableProjects) { Text($0.name).tag(Optional($0.id)) }
-                        }.accessibilityIdentifier("entry.project")
+                        }.disabled(existing?.remoteID != nil).accessibilityIdentifier("entry.project")
                         Button("New project", systemImage: "plus") { showingProjectEditor = true }
                     }
                 }
@@ -78,7 +78,7 @@ struct EntryEditorView: View {
                     }
                     DatePicker("Shipped", selection: $date, in: ...Date.now)
                 } footer: {
-                    Text("Recorded by you. You can edit this entry at any time.")
+                    Text(existing?.remoteID == nil ? "Recorded by you. You can edit this entry at any time." : "Your edits are preserved on later generations. The repository stays linked to its evidence.")
                 }
             }
             .navigationTitle(existing == nil ? "Log a build" : "Edit build")

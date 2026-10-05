@@ -30,7 +30,7 @@ import XCTest
         XCTAssertEqual(exported.entries.first?.record.title, "Made search instant")
         XCTAssertEqual(exported.entries.first?.record.projectID, project.id)
         XCTAssertEqual(exported.entries.first?.origin, "manual")
-        XCTAssertEqual(exported.formatVersion, 1)
+        XCTAssertEqual(exported.formatVersion, 2)
     }
 
     func testDeletingProjectCascadesEntriesAndEvidenceButKeepsReflections() throws {
@@ -42,7 +42,7 @@ import XCTest
         let entry = try XCTUnwrap(context.fetch(FetchDescriptor<BuildEntry>()).first)
         context.insert(
             SourceActivity(
-                provider: "github", externalID: "repo:release:123", kind: "release", title: "v1", occurredAt: .now,
+                provider: "github", repositoryID: "repo", externalID: "repo:release:123", kind: "release", title: "v1", occurredAt: .now,
                 entry: entry))
         try JournalStore.saveReflection(context: context, date: .now, text: "A good day.")
         try JournalStore.delete(project, context: context)
@@ -85,7 +85,7 @@ import XCTest
         context.insert(entry)
         context.insert(
             SourceActivity(
-                provider: "github", externalID: "repo:pr:42", kind: "pullRequest", title: "Search", occurredAt: .now,
+                provider: "github", repositoryID: "repo", externalID: "repo:pr:42", kind: "pullRequest", title: "Search", occurredAt: .now,
                 entry: entry))
         try JournalStore.save(context)
         try JournalStore.saveEntry(
@@ -95,7 +95,7 @@ import XCTest
         decoder.dateDecodingStrategy = .iso8601
         let export = try decoder.decode(JournalExport.self, from: JournalExport.data(context: context))
         XCTAssertEqual(export.entries.first?.origin, "imported")
-        XCTAssertEqual(export.entries.first?.sources.first?.identity, "github:repo:pr:42")
+        XCTAssertEqual(export.entries.first?.sources.first?.identity, EvidenceIdentity.make(provider: "github", repositoryID: "repo", kind: "pullRequest", externalID: "repo:pr:42"))
         XCTAssertEqual(export.entries.first?.record.title, "Shipped instant search")
     }
 

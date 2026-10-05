@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(GitHubConnection.self) private var connection
     @State private var exportURL: URL?
     @State private var exportError = false
 
@@ -20,18 +21,18 @@ struct SettingsView: View {
                 }
                 Section("Connections") {
                     NavigationLink {
-                        ConnectionInfoView()
+                        GitHubConnectionView()
                     } label: {
                         HStack {
                             Label("GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
                             Spacer()
-                            Text("Coming later").font(.caption).foregroundStyle(.secondary)
+                            Text(connection.isConnected ? "Connected" : "Connect").font(.caption).foregroundStyle(.secondary)
                         }
                     }
                 }
                 Section {
                     Text(
-                        "Build entries and reflections are stored locally on this iPhone. Shiplog doesn’t send your journal to a server or AI service."
+                        "Your journal is cached on this iPhone. Connecting GitHub enables server imports and AI drafts for the repositories you select. Manual entries stay local."
                     )
                     .font(.subheadline).foregroundStyle(.secondary)
                     Button("Prepare journal export", systemImage: "square.and.arrow.up") {
@@ -73,36 +74,12 @@ struct SettingsView: View {
     }
 }
 
-struct ConnectionInfoView: View {
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                Image(systemName: "chevron.left.forwardslash.chevron.right").font(.largeTitle).accessibilityHidden(true)
-                Eyebrow(text: "Coming later")
-                Text("Your activity.\nThe bigger picture.").font(.largeTitle.weight(.bold)).tracking(-0.7)
-                Text(
-                    "A future GitHub connection will bring repository activity into Shiplog, so you can shape commits, pull requests, issues, and releases into a meaningful build story."
-                )
-                .foregroundStyle(.secondary)
-                Divider()
-                Text("For now, your journal starts with you.").font(.headline)
-                Text(
-                    "Log builds manually and add a repository link to your projects. No GitHub account is connected, and nothing is imported."
-                )
-                .foregroundStyle(.secondary)
-                Text("Daily and weekly summary drafts are planned. Your own reflections are available today.")
-                    .font(.subheadline).foregroundStyle(.secondary)
-            }.padding(24)
-        }.navigationTitle("GitHub").navigationBarTitleDisplayMode(.inline)
-    }
-}
-
 struct PrivacyView: View {
     var body: some View {
         List {
             Section("Local by default") {
                 Text(
-                    "Shiplog stores your journal in the app’s local database. It makes no network requests, collects no analytics, and includes no advertising or tracking SDKs."
+                    "Shiplog caches your journal in the app’s local database. Manual journaling works offline. There are no analytics, advertising, or tracking SDKs."
                 )
             }
             Section("You choose what leaves") {
@@ -115,9 +92,9 @@ struct PrivacyView: View {
                     "Your data may be included in device backups according to your iOS settings. Deleting the app removes its local journal. Export a copy first if you want to keep it."
                 )
             }
-            Section("Future connections") {
+            Section("GitHub and AI") {
                 Text(
-                    "GitHub authentication and generated summaries are not connected in this version. Future services will require a clear opt-in before your journal is shared."
+                    "Connecting GitHub is optional. You choose repositories and consent before repository context and activity are stored by Shiplog on Vercel/Neon and sent through OpenRouter to its selected model provider. Patches are optional. Generated-text edits are synchronized. Disconnect stops the agent; Delete server data removes your remote account, credentials, evidence, and history. GitHub installation permissions can be revoked in GitHub."
                 )
             }
         }.navigationTitle("Privacy").navigationBarTitleDisplayMode(.inline)

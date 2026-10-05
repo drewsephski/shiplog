@@ -5,9 +5,27 @@ struct EntryDetailView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     let entry: BuildEntry
+    @Query private var remoteSources: [SourceActivity]
     @State private var editing = false
     @State private var confirmsDelete = false
     @State private var error: SaveError?
+
+    init(entry: BuildEntry) {
+        self.entry = entry
+        let ids = entry.evidenceIDs
+        _remoteSources = Query(filter: #Predicate<SourceActivity> { ids.contains($0.identity) }, sort: \SourceActivity.occurredAt)
+    }
+    private var sources: [SourceActivity] {
+        (entry.sources + remoteSources).reduce(into: [String: SourceActivity]()) { $0[$1.identity] = $1 }.values.sorted { $0.occurredAt < $1.occurredAt }
+    }
+    private var originLabel: String {
+        switch entry.origin {
+        case .manual: "Recorded by you"
+        case .imported: "Imported activity"
+        case .generated: "AI draft · Based on source activity"
+        case .userEditedGenerated: "Edited by you · AI draft preserved"
+        }
+    }
 
     var body: some View {
         ScrollView {
@@ -26,11 +44,14 @@ struct EntryDetailView: View {
                     .font(.subheadline).foregroundStyle(.secondary)
                 Divider()
                 if !entry.detail.isEmpty { Text(entry.detail).font(.body).textSelection(.enabled) }
-                Label(entry.origin == .manual ? "Recorded by you" : "Imported activity", systemImage: "pencil.line")
+                Label(originLabel, systemImage: "pencil.line")
                     .font(.caption).foregroundStyle(.secondary)
-                if !entry.sources.isEmpty {
+                if let confidence = entry.confidence {
+                    Text("Model confidence: \(Int(confidence * 100))% · Review against the sources.").font(.caption).foregroundStyle(.secondary)
+                }
+                if !sources.isEmpty {
                     Eyebrow(text: "Source activity")
-                    ForEach(entry.sources, id: \.identity) { source in
+                    ForEach(sources, id: \.identity) { source in
                         VStack(alignment: .leading, spacing: 6) {
                             Text(source.title).font(.subheadline)
                             Text(source.provider).font(.caption).foregroundStyle(.secondary)

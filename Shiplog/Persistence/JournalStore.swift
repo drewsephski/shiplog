@@ -3,7 +3,7 @@ import SwiftData
 
 enum Persistence {
     static func container(inMemory: Bool = false, url: URL? = nil) throws -> ModelContainer {
-        let schema = Schema(versionedSchema: ShiplogSchemaV1.self)
+        let schema = Schema(versionedSchema: ShiplogSchemaV2.self)
         let configuration: ModelConfiguration
         if let url {
             configuration = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
@@ -46,6 +46,11 @@ enum Persistence {
         entry.occurredAt = date
         entry.project = project
         entry.updatedAt = .now
+        if let remoteID = entry.remoteID, let ownerID = entry.ownerID {
+            entry.originRawValue = EntryOrigin.userEditedGenerated.rawValue
+            try JournalSyncStore.enqueue(JournalEdit(mutationID: UUID(), targetID: remoteID, targetType: "entry", deleted: false,
+                title: entry.title, detail: entry.detail, kind: entry.kind, occurredAt: entry.occurredAt), ownerID: ownerID, context: context)
+        }
         if existing == nil { context.insert(entry) }
         try save(context)
     }
@@ -58,11 +63,15 @@ enum Persistence {
         let key = JournalLogic.reflectionKey(for: date, calendar: calendar)
         let existing = try context.fetch(FetchDescriptor<JournalSummary>(predicate: #Predicate { $0.key == key })).first
         let clean = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let remoteID = existing?.remoteID, let ownerID = existing?.ownerID {
+            try JournalSyncStore.enqueue(JournalEdit(mutationID: UUID(), targetID: remoteID, targetType: "narrative", deleted: clean.isEmpty,
+                title: nil, detail: clean, kind: nil, occurredAt: nil), ownerID: ownerID, context: context)
+        }
         if clean.isEmpty {
             if let existing { context.delete(existing) }
         } else if let existing {
             existing.text = clean
-            existing.originRawValue = SummaryOrigin.manual.rawValue
+            existing.originRawValue = (existing.remoteID == nil ? SummaryOrigin.manual : .userEditedGenerated).rawValue
             existing.inputEntryIDs = []
             existing.updatedAt = .now
         } else {
@@ -74,8 +83,18 @@ enum Persistence {
     }
 
     static func delete<T: PersistentModel>(_ model: T, context: ModelContext) throws {
+        if let entry = model as? BuildEntry { try suppress(entry, context: context) }
+        if let project = model as? Project {
+            for entry in project.entries { try suppress(entry, context: context) }
+        }
         context.delete(model)
         try save(context)
+    }
+
+    private static func suppress(_ entry: BuildEntry, context: ModelContext) throws {
+        guard let remoteID = entry.remoteID, let ownerID = entry.ownerID else { return }
+        try JournalSyncStore.enqueue(JournalEdit(mutationID: UUID(), targetID: remoteID, targetType: "entry", deleted: true,
+            title: nil, detail: nil, kind: nil, occurredAt: nil), ownerID: ownerID, context: context)
     }
 
     static func save(_ context: ModelContext) throws {
