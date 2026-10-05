@@ -66,7 +66,10 @@ describe('synthesis provenance',()=>{
     vi.stubEnv('OPENROUTER_API_KEY','test-only-key');vi.stubEnv('OPENROUTER_MODEL','test-only-model');
     try {
       fetch.mockResolvedValueOnce(response({...draft,evidenceAssignments:{}})).mockResolvedValueOnce(response(draft));
-      expect(await new OpenRouterJournalSynthesisService().synthesize(input)).toEqual(output);
+      const existing=[{id:'prior',title:'Old automatic wording',detail:'Do not reuse this draft',evidenceIDs:[],userEdited:false},{id:'protected',title:'My own wording',detail:'Keep this context',evidenceIDs:[],userEdited:true}];
+      expect(await new OpenRouterJournalSynthesisService().synthesize({...input,existing})).toEqual(output);
+      const request=JSON.parse(String(fetch.mock.calls[0][1]?.body));
+      expect(JSON.parse(request.messages[1].content).existing).toEqual([existing[1]]);
       expect(fetch).toHaveBeenCalledTimes(2);
       fetch.mockClear();
       fetch.mockImplementation(async()=>response({...draft,evidenceAssignments:{}}));

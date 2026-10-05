@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { Temporal } from '@js-temporal/polyfill';
 import { z } from 'zod';
 
-export const PROMPT_VERSION = 'journal-synthesis-4';
+export const PROMPT_VERSION = 'journal-synthesis-5';
 export const kindSchema = z.enum(['feature', 'improvement', 'fix', 'release', 'learning']);
 export const dayRequest = z.object({
   day: z.iso.date(),

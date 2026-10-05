@@ -72,10 +72,11 @@ export class OpenRouterJournalSynthesisService implements JournalSynthesisServic
           'Commit attribution author supports authorship; attribution committer only supports committing someone else’s work. A merge action alone does not prove the user implemented the PR.',
           'Never claim tests passed, production delivery, customer impact, learning, or completion without explicit supporting evidence.',
           'Existing userEdited entries are protected: do not produce entries using their evidence. The narrative may cite their evidence and accurately summarize their saved text.',
-          'Existing entries with userEdited=false are prior drafts, not final wording. Rewrite and regroup them from their source evidence in the requested blog style.',
+          'Write fresh prose from source evidence. Only protected user-edited entries are supplied as existing text; automatic drafts are not evidence.',
           'Use uncertainty or modest language when context is incomplete. When an event is sparse, describe the observed action plainly without inferring an accomplishment.',
+          'Begin the narrative with what I worked on, not an evaluation of the day. Avoid pivotal day, big step, accurate record, or claims of reliability. A useful opening resembles: I spent today connecting the app to GitHub and making the journal easier to read. Every statement still requires evidence.',
           'The narrative is an engaging 1-2 paragraph opening, usually 60-120 words, connecting the major themes instead of repeating all the entry details. Use plain prose and blank lines between paragraphs. Support it only with generated entries and protected saved entries. A quiet day returns no entries and an empty narrative.',
-    ].join('\n')},{role:'user',content:JSON.stringify(input)}];
+    ].join('\n')},{role:'user',content:JSON.stringify({...input,existing:input.existing.filter(entry=>entry.userEdited)})}];
     for (let attempt=0;attempt<2;attempt++) {
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions',{
         method:'POST',signal:AbortSignal.timeout(60_000),headers:{authorization:`Bearer ${required('OPENROUTER_API_KEY')}`,'Content-Type':'application/json'},
